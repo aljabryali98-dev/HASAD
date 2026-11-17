@@ -8,7 +8,39 @@ use App\Http\Controllers\GeoExplorerController;
 use App\Http\Controllers\GeographyController;
 use App\Http\Controllers\ProductiveGroupController;
 use App\Http\Controllers\UnifiedPersonnelController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+
+// نقطة تهيئة قاعدة البيانات السحابية بأمان عند النشر على Vercel
+Route::get('/deploy/migrate', function (Request $request) {
+    $token = $request->query('token');
+    $expected = env('DEPLOY_SECRET_KEY', 'hasad-yemen-2026-secret-setup');
+
+    if (!$token || $token !== $expected) {
+        abort(403, 'غير مصرح لك بالوصول: مفتاح التهيئة غير صحيح.');
+    }
+
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        $migrateOutput = Artisan::output();
+
+        Artisan::call('db:seed', ['--force' => true]);
+        $seedOutput = Artisan::output();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم بناء الجداول وتهيئة التقسيم الجغرافي الشامل لليمن بنجاح!',
+            'migrate_output' => $migrateOutput,
+            'seed_output' => $seedOutput,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
 
 // مسارات المصادقة للضيوف (Guest Authentication Routes)
 Route::middleware('guest')->group(function () {
