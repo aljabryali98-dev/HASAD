@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Association;
+use App\Models\Directorate;
+use App\Models\Governorate;
+use App\Models\UnifiedPersonnel;
+use App\Models\Uzlah;
+use App\Models\SubLocation;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class UnifiedPersonnelController extends Controller
+{
+    /**
+     * قائمة الكوادر والفرسان والمتدربين
+     */
+    public function index(Request $request): View
+    {
+        $category = $request->query('category', 'فرسان الجمعية');
+        $subSpecialty = $request->query('sub_specialty');
+
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
+
+        $query = UnifiedPersonnel::with(['association', 'governorate', 'directorate', 'uzlah', 'subLocation']);
+
+        if (!empty($category)) {
+            $query->where('category', $category);
+        }
+        if (!empty($subSpecialty)) {
+            $query->where('sub_specialty', $subSpecialty);
+        }
+        if ($request->filled('gov_id')) {
+            $query->where('governorate_id', $request->gov_id);
+        }
+        if ($request->filled('dir_id')) {
+            $query->where('directorate_id', $request->dir_id);
+        }
+        if ($request->filled('association_id')) {
+            $query->where('association_id', $request->association_id);
+        }
+        if ($request->filled('activated')) {
+            $query->where('is_activated_in_field', $request->activated == '1');
+        }
+        if ($request->filled('search')) {
+            $term = $request->search;
+            $query->where(function ($q) use ($term) {
+                $q->where('full_name', 'like', "%{$term}%")
+                  ->orWhere('code', 'like', "%{$term}%")
+                  ->orWhere('phone', 'like', "%{$term}%")
+                  ->orWhere('specialization', 'like', "%{$term}%");
+            });
+        }
+
+        $personnel = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $stats = [
+            'total_all' => UnifiedPersonnel::count(),
+            'knights_count' => UnifiedPersonnel::where('category', 'فرسان الجمعية')->count(),
+            'researchers_count' => UnifiedPersonnel::where('category', 'باحثين')->count(),
+            'trainers_count' => UnifiedPersonnel::where('category', 'like', '%مدرب%')->count(),
+            'activated_count' => UnifiedPersonnel::where('is_activated_in_field', true)->count(),
+        ];
+
+        return view('personnel.index', compact('personnel', 'category', 'subSpecialty', 'governorates', 'associations', 'stats'));
+    }
+
+    /**
+     * حفظ كادر أو فارس جديد
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'category' => 'required|string|max:100',
+            'sub_specialty' => 'nullable|string|max:100',
+            'full_name' => 'required|string|max:150',
+            'gender' => 'required|string|in:ذكر,أنثى',
+            'birth_date' => 'nullable|date',
+            'education_level' => 'nullable|string|max:100',
+            'specialization' => 'nullable|string|max:100',
+            'graduation_date' => 'nullable|date',
+            'employer' => 'nullable|string|max:150',
+            'phone' => 'nullable|string|max:50',
+            'alt_phone' => 'nullable|string|max:50',
+            'association_id' => 'nullable|exists:associations,id',
+            'governorate_id' => 'required|exists:governorates,id',
+            'directorate_id' => 'required|exists:directorates,id',
+            'uzlah_id' => 'required|exists:uzlahs,id',
+            'sub_location_id' => 'nullable|exists:sub_locations,id',
+            'training_program_name' => 'nullable|string|max:200',
+            'target_group' => 'nullable|string|max:100',
+            'training_date' => 'nullable|date',
+            'blood_type' => 'nullable|string|max:10',
+            'is_activated_in_field' => 'nullable|boolean',
+            'activation_entity' => 'nullable|string|max:150',
+            'notes' => 'nullable|string',
+            // للمرشدين
+            'general_program' => 'nullable|string|max:150',
+            'initiative_type' => 'nullable|string|max:150',
+            'trainer_name' => 'nullable|string|max:150',
+            // لطلاب الزراعة
+            'enrollment_year' => 'nullable|string|max:20',
+            'coordinating_entity' => 'nullable|string|max:150',
+            'activation_type' => 'nullable|string|max:100',
+        ]);
+
+        if (!empty($validated['birth_date'])) {
+            $validated['age'] = Carbon::parse($validated['birth_date'])->age;
+        }
+
+        $validated['code'] = UnifiedPersonnel::generateCode($validated['category']);
+        $validated['is_activated_in_field'] = isset($validated['is_activated_in_field']) ? (bool)$validated['is_activated_in_field'] : false;
+
+        $person = UnifiedPersonnel::create($validated);
+
+        return redirect()->back()
+            ->with('success', "تم تسجيل الكادر/الفارس ({$person->full_name}) بنجاح بالكود: {$person->code}");
+    }
+
+    /**
+     * تحديث بيانات الكادر
+     */
+    public function update(Request $request, int $id)
+    {
+        $person = UnifiedPersonnel::findOrFail($id);
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:150',
+            'phone' => 'nullable|string|max:50',
+            'education_level' => 'nullable|string|max:100',
+            'specialization' => 'nullable|string|max:100',
+            'is_activated_in_field' => 'nullable|boolean',
+            'activation_entity' => 'nullable|string|max:150',
+            'notes' => 'nullable|string',
+        ]);
+
+        $validated['is_activated_in_field'] = isset($validated['is_activated_in_field']) ? (bool)$validated['is_activated_in_field'] : false;
+
+        $person->update($validated);
+
+        return redirect()->back()
+            ->with('success', "تم تحديث بيانات ({$person->full_name}) بنجاح.");
+    }
+
+    /**
+     * حذف كادر
+     */
+    public function destroy(int $id)
+    {
+        $person = UnifiedPersonnel::findOrFail($id);
+        $name = $person->full_name;
+        $person->delete();
+
+        return redirect()->back()
+            ->with('success', "تم حذف سجل ({$name}) بنجاح.");
+    }
+}
