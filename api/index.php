@@ -37,15 +37,6 @@ putenv('APP_ROUTES_CACHE=' . $cacheDir . '/routes-v7.php');
 putenv('APP_EVENTS_CACHE=' . $cacheDir . '/events.php');
 putenv('VIEW_COMPILED_PATH=' . $storagePath . '/framework/views');
 
-// نسخ ملفات الكاش الجاهزة إلى /tmp إن وُجدت لتسريع الإقلاع وتفادي إعادة بنائها
-foreach (['packages.php', 'services.php'] as $file) {
-    $src = __DIR__ . '/../bootstrap/cache/' . $file;
-    $dst = $cacheDir . '/' . $file;
-    if (file_exists($src) && !file_exists($dst)) {
-        @copy($src, $dst);
-    }
-}
-
 // التقاط أي أخطاء إقلاع فادحة (Fatal Errors) وعرضها بدقة
 register_shutdown_function(function () {
     $error = error_get_last();
