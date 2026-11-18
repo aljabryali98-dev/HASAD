@@ -7,7 +7,6 @@ $dirs = [
     $storagePath . '/framework/cache/data',
     $storagePath . '/framework/sessions',
     $storagePath . '/logs',
-    '/tmp/bootstrap/cache',
 ];
 
 foreach ($dirs as $dir) {
@@ -16,11 +15,6 @@ foreach ($dirs as $dir) {
     }
 }
 
-putenv('APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php');
-putenv('APP_EVENTS_CACHE=/tmp/bootstrap/cache/events.php');
-putenv('APP_PACKAGES_CACHE=/tmp/bootstrap/cache/packages.php');
-putenv('APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php');
-putenv('APP_SERVICES_CACHE=/tmp/bootstrap/cache/services.php');
 putenv('VIEW_COMPILED_PATH=' . $storagePath . '/framework/views');
 
 define('LARAVEL_START', microtime(true));
