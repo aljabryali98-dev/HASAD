@@ -70,7 +70,14 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/boost",
+                "laravel/mcp",
+                "laravel/pail",
+                "laravel/pao",
+                "laravel/roster",
+                "nunomaduro/collision"
+            ]
         }
     },
     "config": {
