@@ -17,10 +17,13 @@
     }
   ],
   "env": {
+    "APP_NAME": "حصاد - Hasad ERP",
     "APP_ENV": "production",
     "APP_DEBUG": "true",
+    "APP_KEY": "base64:YHkH3OlI2ctnjmQrBD/c+3zNbdH6+sHjBl4SusN4vtI=",
     "CACHE_STORE": "array",
     "SESSION_DRIVER": "cookie",
-    "LOG_CHANNEL": "stderr"
+    "LOG_CHANNEL": "stderr",
+    "DB_CONNECTION": "pgsql"
   }
 }
