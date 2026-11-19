@@ -268,7 +268,7 @@
                                                 </a>
                                             </td>
                                             <td>{{ $grp->association?->name ?: 'مجموعة مستقلة' }}</td>
-                                            <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ $grp->members_count }} عضو</span></td>
+                                            <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ $grp->total_members ?? 0 }} عضو</span></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

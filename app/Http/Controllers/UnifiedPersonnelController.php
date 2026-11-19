@@ -22,10 +22,16 @@ class UnifiedPersonnelController extends Controller
         $category = $request->query('category', 'فرسان الجمعية');
         $subSpecialty = $request->query('sub_specialty');
 
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
 
-        $query = UnifiedPersonnel::with(['association', 'governorate', 'directorate', 'uzlah', 'subLocation']);
+        $query = UnifiedPersonnel::with([
+            'association:id,name,code',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name',
+            'subLocation:id,name_ar'
+        ]);
 
         if (!empty($category)) {
             $query->where('category', $category);
@@ -43,26 +49,35 @@ class UnifiedPersonnelController extends Controller
             $query->where('association_id', $request->association_id);
         }
         if ($request->filled('activated')) {
-            $query->where('is_activated_in_field', $request->activated == '1');
+            $query->where('is_activated_in_field', (bool) $request->activated);
         }
         if ($request->filled('search')) {
             $term = $request->search;
-            $query->where(function ($q) use ($term) {
-                $q->where('full_name', 'like', "%{$term}%")
-                  ->orWhere('code', 'like', "%{$term}%")
-                  ->orWhere('phone', 'like', "%{$term}%")
-                  ->orWhere('specialization', 'like', "%{$term}%");
+            $likeOp = config('database.default') === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($term, $likeOp) {
+                $q->where('full_name', $likeOp, "%{$term}%")
+                  ->orWhere('code', $likeOp, "%{$term}%")
+                  ->orWhere('phone', $likeOp, "%{$term}%")
+                  ->orWhere('specialization', $likeOp, "%{$term}%");
             });
         }
 
         $personnel = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
+        $statsRow = UnifiedPersonnel::selectRaw("
+            COUNT(*) as total_all,
+            COUNT(CASE WHEN category = 'فرسان الجمعية' THEN 1 END) as knights_count,
+            COUNT(CASE WHEN category = 'باحثين' THEN 1 END) as researchers_count,
+            COUNT(CASE WHEN category LIKE '%مدرب%' THEN 1 END) as trainers_count,
+            COUNT(CASE WHEN is_activated_in_field = true THEN 1 END) as activated_count
+        ")->first();
+
         $stats = [
-            'total_all' => UnifiedPersonnel::count(),
-            'knights_count' => UnifiedPersonnel::where('category', 'فرسان الجمعية')->count(),
-            'researchers_count' => UnifiedPersonnel::where('category', 'باحثين')->count(),
-            'trainers_count' => UnifiedPersonnel::where('category', 'like', '%مدرب%')->count(),
-            'activated_count' => UnifiedPersonnel::where('is_activated_in_field', true)->count(),
+            'total_all' => (int) ($statsRow->total_all ?? 0),
+            'knights_count' => (int) ($statsRow->knights_count ?? 0),
+            'researchers_count' => (int) ($statsRow->researchers_count ?? 0),
+            'trainers_count' => (int) ($statsRow->trainers_count ?? 0),
+            'activated_count' => (int) ($statsRow->activated_count ?? 0),
         ];
 
         return view('personnel.index', compact('personnel', 'category', 'subSpecialty', 'governorates', 'associations', 'stats'));

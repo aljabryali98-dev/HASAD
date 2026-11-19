@@ -24,7 +24,7 @@ class SubLocation extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'integer',
+        'is_active' => 'boolean',
         'uzlah_id' => 'integer',
         'directorate_id' => 'integer',
         'governorate_id' => 'integer',
@@ -93,7 +93,7 @@ class SubLocation extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', 1);
+        return $query->where('is_active', true);
     }
 
     /**

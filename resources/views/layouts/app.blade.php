@@ -204,6 +204,44 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+
+        // دالة تأخير التنفيذ الذكي (Smart Debounce) لتحسين أداء الواجهة وتقليل الطلبات المتكررة
+        function debounce(func, wait = 400) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // تفعيل البحث اللحظي الخفيف مع Debounce لحقول البحث
+            const searchInputs = document.querySelectorAll('input[name="search"].live-search, input[data-debounce]');
+            searchInputs.forEach(input => {
+                input.addEventListener('input', debounce(function() {
+                    const form = this.closest('form');
+                    if (form) {
+                        form.submit();
+                    }
+                }, 450));
+            });
+
+            // منع إرسال النماذج المتكرر لحماية السيرفر وتفادي تجميد الصفحة
+            document.querySelectorAll('form:not(.no-debounce)').forEach(form => {
+                form.addEventListener('submit', function() {
+                    const btn = this.querySelector('button[type="submit"]:not(.no-disable)');
+                    if (btn && !btn.disabled) {
+                        btn.dataset.originalHtml = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> جارِ التحميل...';
+                        setTimeout(() => {
+                            btn.disabled = false;
+                            if (btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+                        }, 8000);
+                    }
+                });
+            });
+        });
     </script>
 
     @stack('scripts')

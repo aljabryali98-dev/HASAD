@@ -19,11 +19,18 @@ class ProductiveGroupController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
-        $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get();
+        $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get(['id', 'full_name', 'phone']);
 
-        $query = ProductiveGroup::with(['association', 'governorate', 'directorate', 'uzlah', 'subLocation', 'facilitators']);
+        $query = ProductiveGroup::with([
+            'association:id,name,code',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name',
+            'subLocation:id,name_ar',
+            'facilitators:id,full_name,phone'
+        ]);
 
         if ($request->filled('gov_id')) {
             $query->where('governorate_id', $request->gov_id);
@@ -42,22 +49,31 @@ class ProductiveGroupController extends Controller
         }
         if ($request->filled('search')) {
             $term = $request->search;
-            $query->where(function ($q) use ($term) {
-                $q->where('name', 'like', "%{$term}%")
-                  ->orWhere('code', 'like', "%{$term}%")
-                  ->orWhere('leader_name', 'like', "%{$term}%")
-                  ->orWhere('main_product', 'like', "%{$term}%");
+            $likeOp = config('database.default') === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($term, $likeOp) {
+                $q->where('name', $likeOp, "%{$term}%")
+                  ->orWhere('code', $likeOp, "%{$term}%")
+                  ->orWhere('leader_name', $likeOp, "%{$term}%")
+                  ->orWhere('main_product', $likeOp, "%{$term}%");
             });
         }
 
         $groups = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
+        $statsRow = ProductiveGroup::selectRaw("
+            COUNT(*) as total_groups,
+            COUNT(CASE WHEN status = 'نشطة' THEN 1 END) as active_groups,
+            COALESCE(SUM(total_members), 0) as total_members,
+            COALESCE(SUM(production_value), 0) as total_production_value,
+            COALESCE(SUM(sales_value), 0) as total_sales_value
+        ")->first();
+
         $stats = [
-            'total_groups' => ProductiveGroup::count(),
-            'active_groups' => ProductiveGroup::where('status', 'نشطة')->count(),
-            'total_members' => ProductiveGroup::sum('total_members'),
-            'total_production_value' => ProductiveGroup::sum('production_value'),
-            'total_sales_value' => ProductiveGroup::sum('sales_value'),
+            'total_groups' => (int) ($statsRow->total_groups ?? 0),
+            'active_groups' => (int) ($statsRow->active_groups ?? 0),
+            'total_members' => (int) ($statsRow->total_members ?? 0),
+            'total_production_value' => (float) ($statsRow->total_production_value ?? 0),
+            'total_sales_value' => (float) ($statsRow->total_sales_value ?? 0),
         ];
 
         return view('productive_groups.index', compact('groups', 'governorates', 'associations', 'facilitators', 'stats'));

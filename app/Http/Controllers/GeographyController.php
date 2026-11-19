@@ -35,13 +35,19 @@ class GeographyController extends Controller
             $directorates = $selectedGov ? $selectedGov->directorates : collect();
         }
 
+        $subStats = SubLocation::selectRaw("
+            COUNT(*) as total,
+            COUNT(CASE WHEN entity_type = 'جمعية تعاونية' THEN 1 END) as coops,
+            COUNT(CASE WHEN entity_type = 'قرية' THEN 1 END) as villages
+        ")->first();
+
         $stats = [
             'governorates_count' => Governorate::count(),
             'districts_count' => Directorate::count(),
             'sub_districts_count' => Uzlah::count(),
-            'villages_count' => SubLocation::count() ?: Village::count(),
-            'sub_locations_count' => SubLocation::count(),
-            'coops_count' => SubLocation::where('entity_type', 'جمعية تعاونية')->count(),
+            'villages_count' => (int) ($subStats->villages ?: Village::count()),
+            'sub_locations_count' => (int) ($subStats->total ?? 0),
+            'coops_count' => (int) ($subStats->coops ?? 0),
         ];
 
         return view('geography.index', compact('governorates', 'selectedGov', 'directorates', 'stats'));
@@ -80,13 +86,19 @@ class GeographyController extends Controller
 
         $subLocations = $query->orderBy('id', 'desc')->paginate(25)->withQueryString();
 
+        $subStats = SubLocation::selectRaw("
+            COUNT(*) as total,
+            COUNT(CASE WHEN entity_type = 'جمعية تعاونية' THEN 1 END) as coops,
+            COUNT(CASE WHEN entity_type = 'قرية' THEN 1 END) as villages
+        ")->first();
+
         $stats = [
             'governorates_count' => Governorate::count(),
             'districts_count' => Directorate::count(),
             'sub_districts_count' => Uzlah::count(),
-            'sub_locations_count' => SubLocation::count(),
-            'villages_count' => SubLocation::where('entity_type', 'قرية')->count(),
-            'coops_count' => SubLocation::where('entity_type', 'جمعية تعاونية')->count(),
+            'sub_locations_count' => (int) ($subStats->total ?? 0),
+            'villages_count' => (int) ($subStats->villages ?? 0),
+            'coops_count' => (int) ($subStats->coops ?? 0),
         ];
 
         return view('geography.manage', compact(

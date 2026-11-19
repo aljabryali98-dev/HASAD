@@ -19,10 +19,15 @@ class AssociationController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = Association::with(['governorate', 'directorate', 'uzlah', 'subLocation'])
-            ->withCount(['productiveGroups', 'personnel', 'loans', 'projects', 'crops', 'farmers']);
+        $query = Association::with([
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name',
+            'subLocation:id,name_ar'
+        ])
+        ->withCount(['productiveGroups', 'personnel', 'loans', 'projects', 'crops', 'farmers']);
 
         if ($request->filled('gov_id')) {
             $query->where('governorate_id', $request->gov_id);
@@ -41,22 +46,31 @@ class AssociationController extends Controller
         }
         if ($request->filled('search')) {
             $term = $request->search;
-            $query->where(function ($q) use ($term) {
-                $q->where('name', 'like', "%{$term}%")
-                  ->orWhere('code', 'like', "%{$term}%")
-                  ->orWhere('president_name', 'like', "%{$term}%")
-                  ->orWhere('license_number', 'like', "%{$term}%");
+            $likeOp = config('database.default') === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($term, $likeOp) {
+                $q->where('name', $likeOp, "%{$term}%")
+                  ->orWhere('code', $likeOp, "%{$term}%")
+                  ->orWhere('president_name', $likeOp, "%{$term}%")
+                  ->orWhere('license_number', $likeOp, "%{$term}%");
             });
         }
 
         $associations = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
+        $statsRow = Association::selectRaw("
+            COUNT(*) as total_associations,
+            COUNT(CASE WHEN status = 'نشطة' THEN 1 END) as active_associations,
+            COUNT(CASE WHEN status = 'تحت التأسيس' THEN 1 END) as under_establishment,
+            COALESCE(SUM(current_capital), 0) as total_capital,
+            COALESCE(SUM(total_members), 0) as total_members
+        ")->first();
+
         $stats = [
-            'total_associations' => Association::count(),
-            'active_associations' => Association::where('status', 'نشطة')->count(),
-            'under_establishment' => Association::where('status', 'تحت التأسيس')->count(),
-            'total_capital' => Association::sum('current_capital'),
-            'total_members' => Association::sum('total_members'),
+            'total_associations' => (int) ($statsRow->total_associations ?? 0),
+            'active_associations' => (int) ($statsRow->active_associations ?? 0),
+            'under_establishment' => (int) ($statsRow->under_establishment ?? 0),
+            'total_capital' => (float) ($statsRow->total_capital ?? 0),
+            'total_members' => (int) ($statsRow->total_members ?? 0),
         ];
 
         return view('associations.index', compact('associations', 'governorates', 'stats'));

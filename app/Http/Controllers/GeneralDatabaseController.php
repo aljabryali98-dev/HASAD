@@ -34,18 +34,32 @@ class GeneralDatabaseController extends Controller
     public function projects(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = AssociationProject::with(['association', 'governorate', 'directorate', 'uzlah']);
+        $query = AssociationProject::with([
+            'association:id,name,code',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name'
+        ]);
+
         if ($request->filled('association_id')) $query->where('association_id', $request->association_id);
         if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
 
         $projects = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = AssociationProject::selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(cost), 0) as total_cost,
+            COUNT(CASE WHEN execution_status = 'منفذ' THEN 1 END) as completed,
+            COUNT(CASE WHEN execution_status = 'قيد التنفيذ' THEN 1 END) as ongoing
+        ")->first();
+
         $stats = [
-            'total' => AssociationProject::count(),
-            'total_cost' => AssociationProject::sum('cost'),
-            'completed' => AssociationProject::where('execution_status', 'منفذ')->count(),
-            'ongoing' => AssociationProject::where('execution_status', 'قيد التنفيذ')->count(),
+            'total' => (int) ($statsRow->total ?? 0),
+            'total_cost' => (float) ($statsRow->total_cost ?? 0),
+            'completed' => (int) ($statsRow->completed ?? 0),
+            'ongoing' => (int) ($statsRow->ongoing ?? 0),
         ];
 
         return view('general.projects', compact('projects', 'associations', 'governorates', 'stats'));
@@ -76,16 +90,29 @@ class GeneralDatabaseController extends Controller
     public function awareness(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = AwarenessSession::with(['association', 'governorate', 'directorate', 'uzlah']);
+        $query = AwarenessSession::with([
+            'association:id,name',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name'
+        ]);
+
         if ($request->filled('type')) $query->where('awareness_type', $request->type);
 
         $sessions = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = AwarenessSession::selectRaw("
+            COALESCE(SUM(sessions_count), 0) as total_sessions,
+            COALESCE(SUM(beneficiaries_count), 0) as beneficiaries,
+            COALESCE(SUM(cost), 0) as total_cost
+        ")->first();
+
         $stats = [
-            'total_sessions' => AwarenessSession::sum('sessions_count'),
-            'beneficiaries' => AwarenessSession::sum('beneficiaries_count'),
-            'total_cost' => AwarenessSession::sum('cost'),
+            'total_sessions' => (int) ($statsRow->total_sessions ?? 0),
+            'beneficiaries' => (int) ($statsRow->beneficiaries ?? 0),
+            'total_cost' => (float) ($statsRow->total_cost ?? 0),
         ];
 
         return view('general.awareness', compact('sessions', 'associations', 'governorates', 'stats'));
@@ -118,16 +145,27 @@ class GeneralDatabaseController extends Controller
     public function initiatives(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $initiatives = CommunityInitiative::with(['association', 'governorate', 'directorate', 'uzlah'])
-            ->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        $initiatives = CommunityInitiative::with([
+            'association:id,name',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name'
+        ])->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = CommunityInitiative::selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(initiators_count), 0) as initiators,
+            COALESCE(SUM(beneficiaries_count), 0) as beneficiaries,
+            COALESCE(SUM(cost), 0) as total_cost
+        ")->first();
 
         $stats = [
-            'total' => CommunityInitiative::count(),
-            'initiators' => CommunityInitiative::sum('initiators_count'),
-            'beneficiaries' => CommunityInitiative::sum('beneficiaries_count'),
-            'total_cost' => CommunityInitiative::sum('cost'),
+            'total' => (int) ($statsRow->total ?? 0),
+            'initiators' => (int) ($statsRow->initiators ?? 0),
+            'beneficiaries' => (int) ($statsRow->beneficiaries ?? 0),
+            'total_cost' => (float) ($statsRow->total_cost ?? 0),
         ];
 
         return view('general.initiatives', compact('initiatives', 'associations', 'governorates', 'stats'));
@@ -162,17 +200,30 @@ class GeneralDatabaseController extends Controller
     public function crops(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = AssociationCrop::with(['association', 'governorate', 'directorate', 'uzlah']);
+        $query = AssociationCrop::with([
+            'association:id,name',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name'
+        ]);
+
         if ($request->filled('association_id')) $query->where('association_id', $request->association_id);
         if ($request->filled('crop_type')) $query->where('crop_type', $request->crop_type);
 
         $crops = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = AssociationCrop::selectRaw("
+            COUNT(*) as total_records,
+            COALESCE(SUM(production_quantity), 0) as total_production,
+            COUNT(CASE WHEN availability_status = 'متوفرة' THEN 1 END) as available_count
+        ")->first();
+
         $stats = [
-            'total_records' => AssociationCrop::count(),
-            'total_production' => AssociationCrop::sum('production_quantity'),
-            'available_count' => AssociationCrop::where('availability_status', 'متوفرة')->count(),
+            'total_records' => (int) ($statsRow->total_records ?? 0),
+            'total_production' => (float) ($statsRow->total_production ?? 0),
+            'available_count' => (int) ($statsRow->available_count ?? 0),
         ];
 
         return view('general.crops', compact('crops', 'associations', 'governorates', 'stats'));
@@ -206,15 +257,25 @@ class GeneralDatabaseController extends Controller
     public function nurseries(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $nurseries = Nursery::with(['association', 'governorate', 'directorate', 'uzlah'])
-            ->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        $nurseries = Nursery::with([
+            'association:id,name',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name'
+        ])->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = Nursery::selectRaw("
+            COUNT(*) as total_nurseries,
+            COALESCE(SUM(capacity), 0) as total_capacity,
+            COUNT(CASE WHEN status = 'مفعل' THEN 1 END) as active_nurseries
+        ")->first();
 
         $stats = [
-            'total_nurseries' => Nursery::count(),
-            'total_capacity' => Nursery::sum('capacity'),
-            'active_nurseries' => Nursery::where('status', 'مفعل')->count(),
+            'total_nurseries' => (int) ($statsRow->total_nurseries ?? 0),
+            'total_capacity' => (float) ($statsRow->total_capacity ?? 0),
+            'active_nurseries' => (int) ($statsRow->active_nurseries ?? 0),
         ];
 
         return view('general.nurseries', compact('nurseries', 'associations', 'governorates', 'stats'));
@@ -245,16 +306,29 @@ class GeneralDatabaseController extends Controller
     public function farmers(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = FarmerAndLand::with(['association', 'governorate', 'directorate', 'uzlah']);
+        $query = FarmerAndLand::with([
+            'association:id,name',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name',
+            'uzlah:id,name_ar,name'
+        ]);
+
         if ($request->filled('association_id')) $query->where('association_id', $request->association_id);
 
         $farmers = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = FarmerAndLand::selectRaw("
+            COUNT(*) as total_farmers,
+            COALESCE(SUM(total_land_area), 0) as total_area,
+            COALESCE(SUM(cultivated_area), 0) as cultivated_area
+        ")->first();
+
         $stats = [
-            'total_farmers' => FarmerAndLand::count(),
-            'total_area' => FarmerAndLand::sum('total_land_area'),
-            'cultivated_area' => FarmerAndLand::sum('cultivated_area'),
+            'total_farmers' => (int) ($statsRow->total_farmers ?? 0),
+            'total_area' => (float) ($statsRow->total_area ?? 0),
+            'cultivated_area' => (float) ($statsRow->cultivated_area ?? 0),
         ];
 
         return view('general.farmers', compact('farmers', 'associations', 'governorates', 'stats'));
@@ -289,16 +363,26 @@ class GeneralDatabaseController extends Controller
     public function loans(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $loans = AssociationLoan::with(['association', 'governorate', 'directorate'])
-            ->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        $loans = AssociationLoan::with([
+            'association:id,name,code',
+            'governorate:id,name_ar,name',
+            'directorate:id,name_ar,name'
+        ])->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = AssociationLoan::selectRaw("
+            COUNT(*) as total_loans,
+            COALESCE(SUM(loan_amount), 0) as total_amount,
+            COALESCE(SUM(paid_amount), 0) as total_paid,
+            COALESCE(SUM(remaining_balance), 0) as total_remaining
+        ")->first();
 
         $stats = [
-            'total_loans' => AssociationLoan::count(),
-            'total_amount' => AssociationLoan::sum('loan_amount'),
-            'total_paid' => AssociationLoan::sum('paid_amount'),
-            'total_remaining' => AssociationLoan::sum('remaining_balance'),
+            'total_loans' => (int) ($statsRow->total_loans ?? 0),
+            'total_amount' => (float) ($statsRow->total_amount ?? 0),
+            'total_paid' => (float) ($statsRow->total_paid ?? 0),
+            'total_remaining' => (float) ($statsRow->total_remaining ?? 0),
         ];
 
         return view('general.loans', compact('loans', 'associations', 'governorates', 'stats'));
