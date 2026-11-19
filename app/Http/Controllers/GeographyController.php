@@ -11,6 +11,7 @@ use App\Services\ExcelLocationImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -21,9 +22,9 @@ class GeographyController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::withCount('directorates')
-            ->orderBy('id')
-            ->get();
+        $governorates = Cache::remember('geo_govs_with_count', 3600, function () {
+            return Governorate::withCount('directorates')->orderBy('id')->get();
+        });
 
         $selectedGovId = $request->query('gov_id', $governorates->first()?->id);
         
@@ -35,20 +36,22 @@ class GeographyController extends Controller
             $directorates = $selectedGov ? $selectedGov->directorates : collect();
         }
 
-        $subStats = SubLocation::selectRaw("
-            COUNT(*) as total,
-            COUNT(CASE WHEN entity_type = 'جمعية تعاونية' THEN 1 END) as coops,
-            COUNT(CASE WHEN entity_type = 'قرية' THEN 1 END) as villages
-        ")->first();
+        $stats = Cache::remember('geo_index_stats', 600, function () {
+            $subStats = SubLocation::selectRaw("
+                COUNT(*) as total,
+                COUNT(CASE WHEN entity_type = 'جمعية تعاونية' THEN 1 END) as coops,
+                COUNT(CASE WHEN entity_type = 'قرية' THEN 1 END) as villages
+            ")->first();
 
-        $stats = [
-            'governorates_count' => Governorate::count(),
-            'districts_count' => Directorate::count(),
-            'sub_districts_count' => Uzlah::count(),
-            'villages_count' => (int) ($subStats->villages ?: Village::count()),
-            'sub_locations_count' => (int) ($subStats->total ?? 0),
-            'coops_count' => (int) ($subStats->coops ?? 0),
-        ];
+            return [
+                'governorates_count' => Governorate::count(),
+                'districts_count' => Directorate::count(),
+                'sub_districts_count' => Uzlah::count(),
+                'villages_count' => (int) ($subStats->villages ?: Village::count()),
+                'sub_locations_count' => (int) ($subStats->total ?? 0),
+                'coops_count' => (int) ($subStats->coops ?? 0),
+            ];
+        });
 
         return view('geography.index', compact('governorates', 'selectedGov', 'directorates', 'stats'));
     }
@@ -58,7 +61,9 @@ class GeographyController extends Controller
      */
     public function manage(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Cache::remember('active_governorates', 86400, function () {
+            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        });
 
         $selectedGovId = $request->query('gov_id');
         $selectedDirId = $request->query('dir_id');
@@ -66,7 +71,7 @@ class GeographyController extends Controller
         $entityType = $request->query('type');
         $search = $request->query('search');
 
-        $query = SubLocation::with(['uzlah', 'directorate', 'governorate']);
+        $query = SubLocation::with(['uzlah:id,name_ar,name', 'directorate:id,name_ar,name', 'governorate:id,name_ar,name']);
 
         if (!empty($selectedGovId)) {
             $query->where('governorate_id', $selectedGovId);
@@ -86,20 +91,22 @@ class GeographyController extends Controller
 
         $subLocations = $query->orderBy('id', 'desc')->paginate(25)->withQueryString();
 
-        $subStats = SubLocation::selectRaw("
-            COUNT(*) as total,
-            COUNT(CASE WHEN entity_type = 'جمعية تعاونية' THEN 1 END) as coops,
-            COUNT(CASE WHEN entity_type = 'قرية' THEN 1 END) as villages
-        ")->first();
+        $stats = Cache::remember('geo_manage_stats', 600, function () {
+            $subStats = SubLocation::selectRaw("
+                COUNT(*) as total,
+                COUNT(CASE WHEN entity_type = 'جمعية تعاونية' THEN 1 END) as coops,
+                COUNT(CASE WHEN entity_type = 'قرية' THEN 1 END) as villages
+            ")->first();
 
-        $stats = [
-            'governorates_count' => Governorate::count(),
-            'districts_count' => Directorate::count(),
-            'sub_districts_count' => Uzlah::count(),
-            'sub_locations_count' => (int) ($subStats->total ?? 0),
-            'villages_count' => (int) ($subStats->villages ?? 0),
-            'coops_count' => (int) ($subStats->coops ?? 0),
-        ];
+            return [
+                'governorates_count' => Governorate::count(),
+                'districts_count' => Directorate::count(),
+                'sub_districts_count' => Uzlah::count(),
+                'sub_locations_count' => (int) ($subStats->total ?? 0),
+                'villages_count' => (int) ($subStats->villages ?? 0),
+                'coops_count' => (int) ($subStats->coops ?? 0),
+            ];
+        });
 
         return view('geography.manage', compact(
             'governorates',
@@ -118,19 +125,22 @@ class GeographyController extends Controller
      */
     public function getDistricts(int $governorateId): JsonResponse
     {
-        $directorates = Directorate::where('governorate_id', $governorateId)
-            ->where('is_active', true)
-            ->orderBy('code')
-            ->get(['id', 'code', 'name_ar', 'name'])
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'code' => $item->code,
-                    'name' => $item->name_ar ?: $item->name,
-                ];
-            });
+        $directorates = Cache::remember("geo_districts_{$governorateId}", 86400, function () use ($governorateId) {
+            return Directorate::where('governorate_id', $governorateId)
+                ->where('is_active', true)
+                ->orderBy('code')
+                ->get(['id', 'code', 'name_ar', 'name'])
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'code' => $item->code,
+                        'name' => $item->name_ar ?: $item->name,
+                    ];
+                });
+        });
 
-        return response()->json($directorates);
+        return response()->json($directorates)
+            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
     }
 
     /**
@@ -138,20 +148,23 @@ class GeographyController extends Controller
      */
     public function getSubDistricts(int $districtId): JsonResponse
     {
-        $uzlahs = Uzlah::where('directorate_id', $districtId)
-            ->where('is_active', true)
-            ->orderBy('code')
-            ->get(['id', 'code', 'name_ar', 'name', 'type'])
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'code' => $item->code,
-                    'name' => $item->name_ar ?: $item->name,
-                    'type' => $item->type,
-                ];
-            });
+        $uzlahs = Cache::remember("geo_uzlahs_{$districtId}", 86400, function () use ($districtId) {
+            return Uzlah::where('directorate_id', $districtId)
+                ->where('is_active', true)
+                ->orderBy('code')
+                ->get(['id', 'code', 'name_ar', 'name', 'type'])
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'code' => $item->code,
+                        'name' => $item->name_ar ?: $item->name,
+                        'type' => $item->type,
+                    ];
+                });
+        });
 
-        return response()->json($uzlahs);
+        return response()->json($uzlahs)
+            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
     }
 
     /**
@@ -159,26 +172,29 @@ class GeographyController extends Controller
      */
     public function getVillages(int $subDistrictId): JsonResponse
     {
-        // دمج نتائج sub_locations مع villages للتوافق التام
-        $subLocations = SubLocation::where('uzlah_id', $subDistrictId)
-            ->where('is_active', 1)
-            ->orderBy('name_ar')
-            ->get(['id', 'code', 'name_ar as name', 'entity_type']);
+        $villages = Cache::remember("geo_villages_{$subDistrictId}", 86400, function () use ($subDistrictId) {
+            // دمج نتائج sub_locations مع villages للتوافق التام
+            $subLocations = SubLocation::where('uzlah_id', $subDistrictId)
+                ->where('is_active', 1)
+                ->orderBy('name_ar')
+                ->get(['id', 'code', 'name_ar as name', 'entity_type']);
 
-        if ($subLocations->isNotEmpty()) {
-            return response()->json($subLocations);
-        }
+            if ($subLocations->isNotEmpty()) {
+                return $subLocations;
+            }
 
-        $villages = Village::where(function ($query) use ($subDistrictId) {
-                $query->where('uzlah_id', $subDistrictId)
-                      ->orWhere('sub_district_id', $subDistrictId);
-            })
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->select(['id', 'name'])
-            ->get();
+            return Village::where(function ($query) use ($subDistrictId) {
+                    $query->where('uzlah_id', $subDistrictId)
+                          ->orWhere('sub_district_id', $subDistrictId);
+                })
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->select(['id', 'name'])
+                ->get();
+        });
 
-        return response()->json($villages);
+        return response()->json($villages)
+            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
     }
 
     /**

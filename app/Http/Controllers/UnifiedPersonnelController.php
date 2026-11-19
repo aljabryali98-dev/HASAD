@@ -10,6 +10,7 @@ use App\Models\Uzlah;
 use App\Models\SubLocation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class UnifiedPersonnelController extends Controller
@@ -22,7 +23,9 @@ class UnifiedPersonnelController extends Controller
         $category = $request->query('category', 'فرسان الجمعية');
         $subSpecialty = $request->query('sub_specialty');
 
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = Cache::remember('active_governorates', 86400, function () {
+            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        });
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
 
         $query = UnifiedPersonnel::with([
@@ -142,6 +145,10 @@ class UnifiedPersonnelController extends Controller
         $validated['is_activated_in_field'] = isset($validated['is_activated_in_field']) ? (bool)$validated['is_activated_in_field'] : false;
 
         $person = UnifiedPersonnel::create($validated);
+
+        // تفريغ كاش لوحة التحكم
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
 
         return redirect()->back()
             ->with('success', "تم تسجيل الكادر/الفارس ({$person->full_name}) بنجاح بالكود: {$person->code}");

@@ -24,6 +24,7 @@ use App\Models\StudyAndResearch;
 use App\Models\UnitTraining;
 use App\Models\Uzlah;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class GeneralDatabaseController extends Controller
@@ -34,7 +35,9 @@ class GeneralDatabaseController extends Controller
     public function projects(Request $request): View
     {
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = Cache::remember('active_governorates', 86400, function () {
+            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        });
 
         $query = AssociationProject::with([
             'association:id,name,code',
@@ -81,6 +84,8 @@ class GeneralDatabaseController extends Controller
         ]);
 
         AssociationProject::create($validated);
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
         return redirect()->back()->with('success', "تم تسجيل المشروع بنجاح والانعكاس تلقائياً في ملف الجمعية والنطاق الجغرافي.");
     }
 
@@ -136,6 +141,8 @@ class GeneralDatabaseController extends Controller
         ]);
 
         AwarenessSession::create($validated);
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
         return redirect()->back()->with('success', "تم تسجيل جلسة التوعية بنجاح.");
     }
 
@@ -191,6 +198,8 @@ class GeneralDatabaseController extends Controller
         ]);
 
         CommunityInitiative::create($validated);
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
         return redirect()->back()->with('success', "تم تسجيل المبادرة بنجاح.");
     }
 
@@ -248,6 +257,8 @@ class GeneralDatabaseController extends Controller
         ]);
 
         AssociationCrop::create($validated);
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
         return redirect()->back()->with('success', "تم تسجيل المحصول الزراعي وتحديث ملف الجمعية والنطاق الجغرافي تلقائياً.");
     }
 
@@ -297,6 +308,8 @@ class GeneralDatabaseController extends Controller
         ]);
 
         Nursery::create($validated);
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
         return redirect()->back()->with('success', "تم تسجيل المشتل بنجاح.");
     }
 
@@ -354,6 +367,8 @@ class GeneralDatabaseController extends Controller
         ]);
 
         FarmerAndLand::create($validated);
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
         return redirect()->back()->with('success', "تم تسجيل المزارع وربطه بالجمعية والنطاق الجغرافي بنجاح.");
     }
 

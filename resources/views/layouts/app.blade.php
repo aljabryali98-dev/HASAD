@@ -7,6 +7,13 @@
     
     <title>@yield('title', 'نظام حصاد - المنظومة الوطنية للرصد والتقييم')</title>
 
+    <!-- تسريع الاتصال بالنطاقات الخارجية (DNS Prefetch & Preconnect) -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://code.jquery.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
     <!-- الخطوط المؤسسية الرسمية (Cairo & IBM Plex Sans Arabic & Tajawal) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

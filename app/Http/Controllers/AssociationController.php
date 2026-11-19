@@ -10,6 +10,7 @@ use App\Models\Governorate;
 use App\Models\Uzlah;
 use App\Models\SubLocation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class AssociationController extends Controller
@@ -19,7 +20,9 @@ class AssociationController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = Cache::remember('active_governorates', 86400, function () {
+            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        });
 
         $query = Association::with([
             'governorate:id,name_ar,name',
@@ -81,7 +84,9 @@ class AssociationController extends Controller
      */
     public function create(): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        $governorates = Cache::remember('active_governorates', 86400, function () {
+            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        });
         return view('associations.create', compact('governorates'));
     }
 
@@ -140,6 +145,10 @@ class AssociationController extends Controller
 
         $validated['code'] = Association::generateCode($validated['uzlah_id']);
         $association = Association::create($validated);
+
+        // تفريغ الكاش لتحديث لوحة التحكم والمؤشرات فوراً
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
 
         // إذا كان هناك اسم رئيس للجمعية، إدراجه تلقائياً كعضو هيئة إدارية أول
         if (!empty($validated['president_name'])) {

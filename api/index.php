@@ -17,6 +17,7 @@ $cacheDir = '/tmp/bootstrap/cache';
 $dirs = [
     $storagePath . '/framework/views',
     $storagePath . '/framework/cache/data',
+    $storagePath . '/framework/cache/locks',
     $storagePath . '/framework/sessions',
     $storagePath . '/logs',
     $cacheDir,

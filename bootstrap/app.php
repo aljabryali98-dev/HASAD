@@ -27,6 +27,7 @@ if (isset($_SERVER['VERCEL']) || env('VERCEL') || (!empty($_ENV['APP_ENV']) && $
     if (!is_dir($vercelStorage)) {
         @mkdir($vercelStorage . '/framework/views', 0777, true);
         @mkdir($vercelStorage . '/framework/cache/data', 0777, true);
+        @mkdir($vercelStorage . '/framework/cache/locks', 0777, true);
         @mkdir($vercelStorage . '/framework/sessions', 0777, true);
         @mkdir($vercelStorage . '/logs', 0777, true);
     }

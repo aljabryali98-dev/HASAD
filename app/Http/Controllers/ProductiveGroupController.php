@@ -10,6 +10,7 @@ use App\Models\ProductiveGroup;
 use App\Models\Uzlah;
 use App\Models\SubLocation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ProductiveGroupController extends Controller
@@ -19,7 +20,9 @@ class ProductiveGroupController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = Cache::remember('active_governorates', 86400, function () {
+            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        });
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
         $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get(['id', 'full_name', 'phone']);
 
@@ -116,6 +119,10 @@ class ProductiveGroupController extends Controller
 
         $validated['code'] = ProductiveGroup::generateCode($validated['uzlah_id']);
         $group = ProductiveGroup::create($validated);
+
+        // تفريغ الكاش لتحديث لوحة التحكم فوراً
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
 
         if ($facilitatorId) {
             $group->facilitators()->attach($facilitatorId, [

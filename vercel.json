@@ -1,14 +1,20 @@
 {
   "version": 2,
   "framework": null,
+  "regions": ["hnd1"],
   "functions": {
     "api/index.php": {
-      "runtime": "vercel-php@0.7.3"
+      "runtime": "vercel-php@0.7.3",
+      "memory": 1024,
+      "maxDuration": 15
     }
   },
   "routes": [
     {
       "src": "/(css|js|images|fonts|favicon.ico|robots.txt)(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      },
       "dest": "/public/$1$2"
     },
     {
@@ -19,9 +25,9 @@
   "env": {
     "APP_NAME": "حصاد - Hasad ERP",
     "APP_ENV": "production",
-    "APP_DEBUG": "true",
+    "APP_DEBUG": "false",
     "APP_KEY": "base64:YHkH3OlI2ctnjmQrBD/c+3zNbdH6+sHjBl4SusN4vtI=",
-    "CACHE_STORE": "array",
+    "CACHE_STORE": "file",
     "SESSION_DRIVER": "cookie",
     "LOG_CHANNEL": "stderr",
     "DB_CONNECTION": "pgsql",
