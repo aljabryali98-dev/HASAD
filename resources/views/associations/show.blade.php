@@ -6,23 +6,23 @@
 <div class="container-fluid p-0">
 
     <!-- شريط العنوان والملخص العلوي للجمعية -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+    <div class="card-hasad mb-4">
         <div class="card-body p-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 me-3 d-flex align-items-center justify-content-center" style="width: 68px; height: 68px;">
+                    <div class="rounded-circle bg-success-subtle text-success p-3 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 68px; height: 68px;">
                         <i class="fa-solid fa-building-columns fs-2"></i>
                     </div>
                     <div>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <h4 class="fw-bold mb-0 text-dark">{{ $association->name }}</h4>
-                            <span class="badge bg-dark font-monospace">{{ $association->code }}</span>
+                            <span class="badge bg-light text-dark border font-monospace">{{ $association->code }}</span>
                             @if($association->status === 'نشطة')
-                                <span class="badge bg-success">نشطة</span>
+                                <span class="badge-status-active">نشطة</span>
                             @elseif($association->status === 'تحت التأسيس')
-                                <span class="badge bg-warning text-dark">تحت التأسيس</span>
+                                <span class="badge-status-pending">تحت التأسيس</span>
                             @elseif($association->status === 'متعثرة')
-                                <span class="badge bg-danger">متعثرة</span>
+                                <span class="badge-status-danger">متعثرة</span>
                             @else
                                 <span class="badge bg-secondary">{{ $association->status }}</span>
                             @endif
@@ -36,11 +36,13 @@
                     </div>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ route('associations.edit', $association->id) }}" class="btn btn-outline-primary">
-                        <i class="fa-solid fa-pen-to-square me-1"></i> تعديل بيانات الجمعية
+                    <a href="{{ route('associations.edit', $association->id) }}" class="btn btn-hasad-primary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>تعديل بيانات الجمعية</span>
                     </a>
-                    <a href="{{ route('associations.index') }}" class="btn btn-outline-secondary">
-                        <i class="fa-solid fa-arrow-right me-1"></i> القائمة الرئيسية
+                    <a href="{{ route('associations.index') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <span>القائمة الرئيسية</span>
                     </a>
                 </div>
             </div>
@@ -51,27 +53,27 @@
             <div class="row g-2 text-center small">
                 <div class="col-6 col-md-2">
                     <span class="text-muted d-block">إجمالي الأعضاء</span>
-                    <strong class="fs-6 text-dark">{{ number_format($association->total_members) }}</strong>
+                    <strong class="fs-6 text-dark stat-num">{{ number_format($association->total_members) }}</strong>
                 </div>
                 <div class="col-6 col-md-2">
                     <span class="text-muted d-block">رأس المال الحالي</span>
-                    <strong class="fs-6 text-dark">{{ number_format($association->current_capital) }} ر.ي</strong>
+                    <strong class="fs-6 text-dark stat-num">{{ number_format($association->current_capital) }} ر.ي</strong>
                 </div>
                 <div class="col-6 col-md-2">
                     <span class="text-muted d-block">المشاريع المنفذة</span>
-                    <strong class="fs-6 text-success">{{ $association->projects->count() ?: $association->implemented_projects_count }}</strong>
+                    <strong class="fs-6 text-success stat-num">{{ $association->projects->count() ?: $association->implemented_projects_count }}</strong>
                 </div>
                 <div class="col-6 col-md-2">
                     <span class="text-muted d-block">المجاميع الإنتاجية</span>
-                    <strong class="fs-6 text-primary">{{ $association->productiveGroups->count() }}</strong>
+                    <strong class="fs-6 text-primary stat-num">{{ $association->productiveGroups->count() }}</strong>
                 </div>
                 <div class="col-6 col-md-2">
                     <span class="text-muted d-block">الكوادر والفرسان</span>
-                    <strong class="fs-6 text-info">{{ $association->personnel->count() }}</strong>
+                    <strong class="fs-6 text-info stat-num">{{ $association->personnel->count() }}</strong>
                 </div>
                 <div class="col-6 col-md-2">
                     <span class="text-muted d-block">القروض البيضاء</span>
-                    <strong class="fs-6 text-warning">{{ $association->loans->count() }}</strong>
+                    <strong class="fs-6 text-warning stat-num">{{ $association->loans->count() }}</strong>
                 </div>
             </div>
         </div>
@@ -79,7 +81,7 @@
 
     <!-- رسائل التنبيه والنجاح -->
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm" role="alert">
             <i class="fa-solid fa-circle-check me-2 fs-5"></i>
             <div>{{ session('success') }}</div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -87,7 +89,7 @@
     @endif
 
     <!-- بطاقة التبويبات الـ 9 الشاملة (The 9 Tabs of Association Dossier) -->
-    <div class="card border-0 shadow-sm rounded-3">
+    <div class="card-hasad">
         <div class="card-header bg-white p-2 border-bottom">
             <ul class="nav nav-pills nav-fill flex-column flex-md-row gap-1" id="associationTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -397,7 +399,7 @@
                         </div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
+                            <table class="table-hasad align-middle mb-0 text-nowrap">
                                 <thead class="table-light">
                                     <tr>
                                         <th>الاسم الرباعي</th>
@@ -761,7 +763,7 @@
                         </div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
+                            <table class="table-hasad align-middle mb-0 text-nowrap">
                                 <thead class="table-light">
                                     <tr>
                                         <th>رقم القرض</th>

@@ -1,69 +1,106 @@
 @extends('layouts.app')
 
-@section('title', 'سجل المحاصيل الزراعية - نظام حصاد')
+@section('title', 'سجل المحاصيل الزراعية والإنتاج - نظام حصاد')
 
 @section('content')
 <div class="container-fluid p-0">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <!-- الترويسة الرئيسية والمسار الإرشادي -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h4 class="fw-bold mb-1 text-dark">
-                <i class="fa-solid fa-wheat-awn text-warning me-2"></i> سجل المحاصيل والإنتاج الزراعي
+            <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                <span class="text-success fs-5"><i class="fa-solid fa-wheat-awn"></i></span>
+                سجل المحاصيل والإنتاج الزراعي
             </h4>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 small">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">الرئيسية</a></li>
-                    <li class="breadcrumb-item active">الزراعة والإنتاج الحيواني</li>
+                <ol class="breadcrumb mb-0 small text-muted">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none text-muted">الرئيسية</a></li>
+                    <li class="breadcrumb-item active text-success fw-bold" aria-current="page">سجل المحاصيل</li>
                 </ol>
             </nav>
         </div>
-        <button type="button" class="btn btn-warning fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#modalAddCrop">
-            <i class="fa-solid fa-plus-circle me-1"></i> تسجيل محصول زراعي جديد
-        </button>
+        <div>
+            <button type="button" class="btn btn-hasad-primary d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddCrop">
+                <i class="fa-solid fa-plus-circle"></i>
+                <span>تسجيل محصول زراعي جديد</span>
+            </button>
+        </div>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm" role="alert">
+            <i class="fa-solid fa-circle-check me-2 fs-5"></i>
+            <div>{{ session('success') }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
+    <!-- بطاقات المؤشرات الإحصائية -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm p-3 text-center">
-                <span class="text-muted small fw-bold">إجمالي السجلات</span>
-                <h4 class="fw-bold text-dark mb-0">{{ number_format($stats['total_records']) }}</h4>
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="kpi-title">إجمالي السجلات المسجلة</div>
+                        <div class="kpi-value text-dark stat-num">{{ number_format($stats['total_records']) }}</div>
+                        <div class="kpi-subtitle">محصول زراعي مسجل</div>
+                    </div>
+                    <div class="kpi-icon bg-light text-primary">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm p-3 text-center">
-                <span class="text-muted small fw-bold">إجمالي كمية الإنتاج المسجلة</span>
-                <h4 class="fw-bold text-success mb-0">{{ number_format($stats['total_production']) }} طن</h4>
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="kpi-title">إجمالي الإنتاج المسجل</div>
+                        <div class="kpi-value text-success stat-num">{{ number_format($stats['total_production']) }} <small class="fs-6 text-muted">طن</small></div>
+                        <div class="kpi-subtitle">إنتاج فعلي ومتوقع</div>
+                    </div>
+                    <div class="kpi-icon bg-success-subtle text-success">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm p-3 text-center">
-                <span class="text-muted small fw-bold">المحاصيل المتوفرة حالياً</span>
-                <h4 class="fw-bold text-primary mb-0">{{ number_format($stats['available_count']) }}</h4>
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="kpi-title">المحاصيل المتوفرة حالياً</div>
+                        <div class="kpi-value text-primary stat-num">{{ number_format($stats['available_count']) }}</div>
+                        <div class="kpi-subtitle">محصول جاهز للتسويق</div>
+                    </div>
+                    <div class="kpi-icon bg-primary-subtle text-primary">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="fw-bold mb-0 text-dark">سجل المحاصيل وأصنافها المعتمدة</h6>
-            <span class="badge bg-light text-dark border">صفحة {{ $crops->currentPage() }}</span>
+    <!-- جدول سجل المحاصيل وأصنافها -->
+    <div class="card-hasad">
+        <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-list-check text-success"></i>
+                <h6 class="fw-bold mb-0 text-dark">سجل المحاصيل وأصنافها المعتمدة</h6>
+            </div>
+            <span class="badge bg-light text-muted border px-3 py-2 rounded-pill font-monospace small">
+                صفحة {{ $crops->currentPage() }} من {{ $crops->lastPage() }}
+            </span>
         </div>
         <div class="card-body p-0">
             @if($crops->isEmpty())
                 <div class="text-center py-5 text-muted">
-                    <i class="fa-solid fa-wheat-awn fs-1 mb-2 d-block"></i>
-                    لا توجد محاصيل مسجلة حالياً.
+                    <i class="fa-solid fa-wheat-awn fs-1 mb-2 d-block text-secondary opacity-50"></i>
+                    <p class="mb-0 fw-medium">لا توجد محاصيل زراعية مسجلة حالياً.</p>
                 </div>
             @else
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 text-nowrap">
-                        <thead class="table-light">
+                    <table class="table-hasad align-middle mb-0 text-nowrap">
+                        <thead>
                             <tr>
                                 <th>نوع المحصول</th>
                                 <th>الصنف</th>
@@ -82,7 +119,7 @@
                                     <td>{{ $crop->crop_variety ?: '-' }}</td>
                                     <td>
                                         @if($crop->association)
-                                            <a href="{{ route('associations.show', $crop->association_id) }}" class="text-primary fw-bold text-decoration-none">
+                                            <a href="{{ route('associations.show', $crop->association_id) }}" class="text-success fw-bold text-decoration-none">
                                                 {{ $crop->association->name }}
                                             </a>
                                         @else
@@ -90,30 +127,41 @@
                                         @endif
                                     </td>
                                     <td>{{ $crop->governorate?->name_ar }} - {{ $crop->directorate?->name_ar }}</td>
-                                    <td class="font-monospace fw-bold">{{ number_format($crop->production_quantity) }} {{ $crop->quantity_unit }}</td>
-                                    <td><span class="badge bg-success">{{ $crop->availability_status }}</span></td>
-                                    <td><span class="badge bg-info bg-opacity-10 text-info">{{ $crop->execution_status }}</span></td>
-                                    <td>{{ $crop->harvest_date?->format('Y-m-d') ?: '-' }}</td>
+                                    <td class="stat-num fw-bold">{{ number_format($crop->production_quantity) }} {{ $crop->quantity_unit }}</td>
+                                    <td>
+                                        <span class="badge {{ $crop->availability_status === 'متوفرة' ? 'badge-status-active' : 'badge-status-pending' }}">
+                                            {{ $crop->availability_status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $crop->execution_status === 'منفذ' ? 'badge-status-active' : 'bg-light text-muted border' }}">
+                                            {{ $crop->execution_status }}
+                                        </span>
+                                    </td>
+                                    <td class="stat-num text-muted">{{ $crop->harvest_date?->format('Y-m-d') ?: '-' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-                @if($crops->hasPages())
-                    <div class="card-footer bg-white border-0">{{ $crops->links('pagination::bootstrap-5') }}</div>
-                @endif
+                <div class="p-3 border-top">
+                    {{ $crops->links() }}
+                </div>
             @endif
         </div>
     </div>
 </div>
 
-<!-- مودال تسجيل محصول جديد -->
+<!-- Modal: Add Crop -->
 <div class="modal fade" id="modalAddCrop" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow border-0 rounded-3">
-            <div class="modal-header bg-warning py-3">
-                <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-plus-circle me-2"></i> تسجيل محصول زراعي جديد</h6>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white p-3" style="background: linear-gradient(135deg, var(--hasad-primary) 0%, var(--hasad-primary-dark) 100%) !important;">
+                <h5 class="modal-title fw-bold fs-6 text-white d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>تسجيل محصول زراعي جديد</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ route('general.crops.store') }}">
                 @csrf
@@ -179,9 +227,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-2">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-warning btn-sm fw-bold"><i class="fa-solid fa-check me-1"></i> حفظ وتحديث ملف الجمعية</button>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-hasad-primary px-4">
+                        <i class="fa-solid fa-save me-1"></i> حفظ وتحديث البيانات
+                    </button>
                 </div>
             </form>
         </div>

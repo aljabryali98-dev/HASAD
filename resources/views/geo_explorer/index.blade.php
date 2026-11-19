@@ -5,60 +5,59 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h4 class="fw-bold mb-1 text-dark">
-                <i class="fa-solid fa-earth-asia text-primary me-2"></i> مستكشف النطاق الجغرافي الشامل (360° Geo-Explorer)
+            <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                <span class="text-success fs-5"><i class="fa-solid fa-earth-asia"></i></span>
+                مستكشف النطاق الجغرافي الشامل (360° Geo-Explorer)
             </h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 small">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">الرئيسية</a></li>
                     <li class="breadcrumb-item active">المستكشف الجغرافي الموحد (34 قسماً)</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary p-2">
+            <span class="badge bg-white text-success border border-success border-opacity-25 p-2 rounded-pill shadow-sm small">
                 <i class="fa-solid fa-cubes-stacked me-1"></i> تجميع لحظي لكافة أنشطة النطاق الجغرافي
             </span>
         </div>
     </div>
 
     <!-- شريط اختيار النطاق الجغرافي المستكشف -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
-        <div class="card-body p-3">
-            <form method="GET" action="{{ route('geo-explorer.index') }}">
-                <div class="row g-2 align-items-center">
-                    <div class="col-12 col-md-10">
-                        <x-location-hierarchy-selector 
-                            :governorateId="$selectedGovId"
-                            :directorateId="$selectedDirId"
-                            :uzlahId="$selectedUzlId"
-                            :showAddButton="false"
-                        />
-                    </div>
-                    <div class="col-12 col-md-2 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fa-solid fa-binoculars me-1"></i> استكشاف
-                        </button>
-                    </div>
+    <div class="filter-card">
+        <form method="GET" action="{{ route('geo-explorer.index') }}">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-10">
+                    <x-location-hierarchy-selector 
+                        :governorateId="$selectedGovId"
+                        :directorateId="$selectedDirId"
+                        :uzlahId="$selectedUzlId"
+                        :showAddButton="false"
+                    />
                 </div>
-            </form>
-        </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-hasad-primary w-100">
+                        <i class="fa-solid fa-binoculars me-1"></i> استكشاف
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- بطاقة عنوان النطاق المختار -->
-    <div class="alert alert-light border shadow-sm rounded-3 p-3 mb-4 d-flex justify-content-between align-items-center">
+    <div class="alert alert-light border rounded-3 p-3 mb-4 d-flex justify-content-between align-items-center bg-white shadow-sm">
         <div>
             <span class="text-muted small d-block">الملف الإحصائي والتشغيلي الموحد للنطاق:</span>
-            <h5 class="fw-bold text-dark mb-0">
-                <i class="fa-solid fa-location-dot text-danger me-2"></i>
-                {{ $currentGov?->name_ar ?? 'الجمهورية اليمنية' }}
-                @if($currentDir) <span class="text-muted">/</span> مديرية {{ $currentDir->name_ar }} @endif
-                @if($currentUzl) <span class="text-muted">/</span> عزلة {{ $currentUzl->name_ar }} @endif
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-location-dot text-danger"></i>
+                <span>{{ $currentGov?->name_ar ?? 'الجمهورية اليمنية' }}</span>
+                @if($currentDir) <span class="text-muted">/</span> <span>مديرية {{ $currentDir->name_ar }}</span> @endif
+                @if($currentUzl) <span class="text-muted">/</span> <span>عزلة {{ $currentUzl->name_ar }}</span> @endif
             </h5>
         </div>
-        <span class="badge bg-dark font-monospace p-2">
+        <span class="badge bg-light text-dark font-monospace border p-2">
             كود النطاق: {{ $currentUzl?->code ?? $currentDir?->code ?? $currentGov?->code ?? 'ALL' }}
         </span>
     </div>
@@ -66,45 +65,45 @@
     <!-- بطاقات الإحصائيات المجمعة الست -->
     <div class="row g-3 mb-4 text-center">
         <div class="col-sm-6 col-xl-2">
-            <div class="card border-0 shadow-sm p-3 rounded-3">
-                <span class="text-muted small fw-bold d-block">الجمعيات التعاونية</span>
-                <h4 class="fw-bold text-primary mb-0">{{ number_format($stats['associations_count']) }}</h4>
+            <div class="kpi-card kpi-emerald h-100 p-3">
+                <span class="text-muted small fw-bold d-block mb-1">الجمعيات التعاونية</span>
+                <h4 class="stat-num text-dark mb-0">{{ number_format($stats['associations_count']) }}</h4>
             </div>
         </div>
         <div class="col-sm-6 col-xl-2">
-            <div class="card border-0 shadow-sm p-3 rounded-3">
-                <span class="text-muted small fw-bold d-block">المجاميع الإنتاجية</span>
-                <h4 class="fw-bold text-success mb-0">{{ number_format($stats['productive_groups_count']) }}</h4>
+            <div class="kpi-card kpi-emerald h-100 p-3">
+                <span class="text-muted small fw-bold d-block mb-1">المجاميع الإنتاجية</span>
+                <h4 class="stat-num text-success mb-0">{{ number_format($stats['productive_groups_count']) }}</h4>
             </div>
         </div>
         <div class="col-sm-6 col-xl-2">
-            <div class="card border-0 shadow-sm p-3 rounded-3">
-                <span class="text-muted small fw-bold d-block">الكوادر والفرسان</span>
-                <h4 class="fw-bold text-info mb-0">{{ number_format($stats['personnel_count']) }}</h4>
+            <div class="kpi-card kpi-blue h-100 p-3">
+                <span class="text-muted small fw-bold d-block mb-1">الكوادر والفرسان</span>
+                <h4 class="stat-num text-primary mb-0">{{ number_format($stats['personnel_count']) }}</h4>
             </div>
         </div>
         <div class="col-sm-6 col-xl-2">
-            <div class="card border-0 shadow-sm p-3 rounded-3">
-                <span class="text-muted small fw-bold d-block">المشاريع والمبادرات</span>
-                <h4 class="fw-bold text-warning mb-0">{{ number_format($stats['projects_count'] + $stats['initiatives_count']) }}</h4>
+            <div class="kpi-card kpi-amber h-100 p-3">
+                <span class="text-muted small fw-bold d-block mb-1">المشاريع والمبادرات</span>
+                <h4 class="stat-num text-dark mb-0">{{ number_format($stats['projects_count'] + $stats['initiatives_count']) }}</h4>
             </div>
         </div>
         <div class="col-sm-6 col-xl-2">
-            <div class="card border-0 shadow-sm p-3 rounded-3">
-                <span class="text-muted small fw-bold d-block">المزارعون المسجلون</span>
-                <h4 class="fw-bold text-dark mb-0">{{ number_format($stats['farmers_count']) }}</h4>
+            <div class="kpi-card kpi-purple h-100 p-3">
+                <span class="text-muted small fw-bold d-block mb-1">المزارعون المسجلون</span>
+                <h4 class="stat-num text-dark mb-0">{{ number_format($stats['farmers_count']) }}</h4>
             </div>
         </div>
         <div class="col-sm-6 col-xl-2">
-            <div class="card border-0 shadow-sm p-3 rounded-3">
-                <span class="text-muted small fw-bold d-block">القروض البيضاء</span>
-                <h4 class="fw-bold text-danger mb-0">{{ number_format($stats['loans_count']) }}</h4>
+            <div class="kpi-card kpi-amber h-100 p-3">
+                <span class="text-muted small fw-bold d-block mb-1">القروض البيضاء</span>
+                <h4 class="stat-num text-danger mb-0">{{ number_format($stats['loans_count']) }}</h4>
             </div>
         </div>
     </div>
 
     <!-- تبويبات استعراض السجلات الميدانية في هذا النطاق -->
-    <div class="card border-0 shadow-sm rounded-3">
+    <div class="card-hasad">
         <div class="card-header bg-white p-2 border-bottom">
             <ul class="nav nav-pills nav-fill flex-column flex-md-row gap-1" id="geoExplorerTabs" role="tablist">
                 <li class="nav-item">
@@ -153,8 +152,8 @@
                         <div class="text-center py-4 text-muted small">لا توجد جمعيات مسجلة في هذا النطاق بعد.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>الكود</th>
                                         <th>اسم الجمعية</th>
@@ -169,15 +168,19 @@
                                 <tbody>
                                     @foreach($associations as $a)
                                         <tr>
-                                            <td><span class="badge bg-secondary font-monospace">{{ $a->code }}</span></td>
+                                            <td><span class="badge bg-light text-dark font-monospace border">{{ $a->code }}</span></td>
                                             <td class="fw-bold">{{ $a->name }}</td>
-                                            <td>{{ $a->type }}</td>
+                                            <td><span class="badge bg-light text-dark border">{{ $a->type }}</span></td>
                                             <td>{{ $a->uzlah?->name_ar }}</td>
                                             <td>{{ $a->president_name ?: '-' }}</td>
-                                            <td>{{ number_format($a->total_members) }}</td>
-                                            <td><span class="badge bg-success">{{ $a->status }}</span></td>
+                                            <td><span class="stat-num">{{ number_format($a->total_members) }}</span></td>
                                             <td>
-                                                <a href="{{ route('associations.show', $a->id) }}" class="btn btn-sm btn-outline-primary">
+                                                <span class="badge-status badge-status-success">
+                                                    <span class="badge-status-dot"></span> {{ $a->status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('associations.show', $a->id) }}" class="btn btn-sm btn-hasad-outline py-1 px-2" style="font-size: 0.8rem;">
                                                     عرض الملف الشامل
                                                 </a>
                                             </td>
@@ -195,8 +198,8 @@
                         <div class="text-center py-4 text-muted small">لا توجد مجاميع إنتاجية مسجلة في هذا النطاق.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>الكود</th>
                                         <th>اسم المجموعة</th>
@@ -210,13 +213,17 @@
                                 <tbody>
                                     @foreach($productiveGroups as $grp)
                                         <tr>
-                                            <td><span class="badge bg-secondary font-monospace">{{ $grp->code }}</span></td>
+                                            <td><span class="badge bg-light text-dark font-monospace border">{{ $grp->code }}</span></td>
                                             <td class="fw-bold">{{ $grp->name }}</td>
-                                            <td>{{ $grp->group_type }}</td>
+                                            <td><span class="badge bg-light text-dark border">{{ $grp->group_type }}</span></td>
                                             <td>{{ $grp->main_product ?: '-' }}</td>
-                                            <td>{{ $grp->total_members }}</td>
+                                            <td><span class="stat-num">{{ $grp->total_members }}</span></td>
                                             <td>{{ $grp->association?->name ?: '-' }}</td>
-                                            <td><span class="badge bg-success">{{ $grp->status }}</span></td>
+                                            <td>
+                                                <span class="badge-status badge-status-success">
+                                                    <span class="badge-status-dot"></span> {{ $grp->status }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -231,8 +238,8 @@
                         <div class="text-center py-4 text-muted small">لا يوجد كوادر مسجلون في هذا النطاق.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>الكود</th>
                                         <th>الاسم الرباعي</th>
@@ -245,15 +252,21 @@
                                 <tbody>
                                     @foreach($personnel as $p)
                                         <tr>
-                                            <td><span class="badge bg-secondary font-monospace">{{ $p->code }}</span></td>
+                                            <td><span class="badge bg-light text-dark font-monospace border">{{ $p->code }}</span></td>
                                             <td class="fw-bold">{{ $p->full_name }}</td>
-                                            <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ $p->category }}</span></td>
+                                            <td><span class="badge-status badge-status-info">{{ $p->category }}</span></td>
                                             <td>{{ $p->sub_specialty ?: $p->specialization ?: '-' }}</td>
                                             <td class="font-monospace">{{ $p->phone ?: '-' }}</td>
                                             <td>
-                                                <span class="badge {{ $p->is_activated_in_field ? 'bg-success' : 'bg-secondary' }}">
-                                                    {{ $p->is_activated_in_field ? 'مفعل' : 'غير مفعل' }}
-                                                </span>
+                                                @if($p->is_activated_in_field)
+                                                    <span class="badge-status badge-status-success">
+                                                        <span class="badge-status-dot"></span> مفعل
+                                                    </span>
+                                                @else
+                                                    <span class="badge-status badge-status-warning">
+                                                        <span class="badge-status-dot"></span> غير مفعل
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -269,8 +282,8 @@
                         <div class="text-center py-4 text-muted small">لا توجد مشاريع مسجلة في هذا النطاق.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>اسم المشروع</th>
                                         <th>النوع</th>
@@ -283,8 +296,12 @@
                                         <tr>
                                             <td class="fw-bold">{{ $pr->project_name }}</td>
                                             <td>{{ $pr->project_type ?: '-' }}</td>
-                                            <td><span class="badge bg-success">{{ $pr->execution_status }}</span></td>
-                                            <td class="font-monospace">{{ number_format($pr->cost) }}</td>
+                                            <td>
+                                                <span class="badge-status badge-status-success">
+                                                    <span class="badge-status-dot"></span> {{ $pr->execution_status }}
+                                                </span>
+                                            </td>
+                                            <td class="stat-num text-success fw-bold">{{ number_format($pr->cost) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -299,8 +316,8 @@
                         <div class="text-center py-4 text-muted small">لا توجد محاصيل مسجلة في هذا النطاق.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>نوع المحصول</th>
                                         <th>الصنف</th>
@@ -313,8 +330,12 @@
                                         <tr>
                                             <td class="fw-bold">{{ $cr->crop_type }}</td>
                                             <td>{{ $cr->crop_variety ?: '-' }}</td>
-                                            <td class="font-monospace">{{ number_format($cr->production_quantity) }} {{ $cr->quantity_unit }}</td>
-                                            <td><span class="badge bg-success">{{ $cr->availability_status }}</span></td>
+                                            <td class="stat-num">{{ number_format($cr->production_quantity) }} {{ $cr->quantity_unit }}</td>
+                                            <td>
+                                                <span class="badge-status badge-status-success">
+                                                    <span class="badge-status-dot"></span> {{ $cr->availability_status }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -329,8 +350,8 @@
                         <div class="text-center py-4 text-muted small">لا يوجد مزارعون مسجلون في هذا النطاق.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>اسم المزارع</th>
                                         <th>الهاتف</th>
@@ -344,9 +365,9 @@
                                         <tr>
                                             <td class="fw-bold">{{ $fm->farmer_name }}</td>
                                             <td class="font-monospace">{{ $fm->phone ?: '-' }}</td>
-                                            <td>{{ $fm->cultivated_area }} {{ $fm->area_unit }}</td>
+                                            <td class="stat-num">{{ $fm->cultivated_area }} {{ $fm->area_unit }}</td>
                                             <td>{{ $fm->main_crop_type ?: '-' }}</td>
-                                            <td><span class="badge bg-info bg-opacity-10 text-info">{{ $fm->irrigation_source }}</span></td>
+                                            <td><span class="badge-status badge-status-info">{{ $fm->irrigation_source }}</span></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -361,8 +382,8 @@
                         <div class="text-center py-4 text-muted small">لا توجد قروض بيضاء مسجلة في هذا النطاق.</div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-nowrap">
-                                <thead class="table-light">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
                                     <tr>
                                         <th>رقم القرض</th>
                                         <th>المستفيد</th>
@@ -375,12 +396,16 @@
                                 <tbody>
                                     @foreach($loans as $ln)
                                         <tr>
-                                            <td><span class="badge bg-secondary font-monospace">{{ $ln->code }}</span></td>
+                                            <td><span class="badge bg-light text-dark font-monospace border">{{ $ln->code }}</span></td>
                                             <td class="fw-bold">{{ $ln->beneficiary_name }}</td>
-                                            <td class="font-monospace">{{ number_format($ln->loan_amount) }}</td>
-                                            <td class="font-monospace text-success">{{ number_format($ln->paid_amount) }}</td>
-                                            <td class="font-monospace text-danger fw-bold">{{ number_format($ln->remaining_balance) }}</td>
-                                            <td><span class="badge bg-warning text-dark">{{ $ln->loan_status }}</span></td>
+                                            <td class="stat-num">{{ number_format($ln->loan_amount) }}</td>
+                                            <td class="stat-num text-success">{{ number_format($ln->paid_amount) }}</td>
+                                            <td class="stat-num text-danger fw-bold">{{ number_format($ln->remaining_balance) }}</td>
+                                            <td>
+                                                <span class="badge-status badge-status-warning">
+                                                    <span class="badge-status-dot"></span> {{ $ln->loan_status }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

@@ -4,6 +4,12 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
+// ضمان تمرير بروتوكول HTTPS في بيئة Vercel Serverless لمنع تحذيرات المتصفح
+if ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || isset($_SERVER['VERCEL']) || getenv('VERCEL')) {
+    $_SERVER['HTTPS'] = 'on';
+    $_SERVER['SERVER_PORT'] = 443;
+}
+
 // تهيئة مسارات التخزين المؤقت في مسار /tmp المتاح للكتابة في بيئة Vercel Serverless
 $storagePath = '/tmp/storage';
 $cacheDir = '/tmp/bootstrap/cache';
