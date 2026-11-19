@@ -80,7 +80,19 @@ class UnifiedPersonnelController extends Controller
             'activated_count' => (int) ($statsRow->activated_count ?? 0),
         ];
 
-        return view('personnel.index', compact('personnel', 'category', 'subSpecialty', 'governorates', 'associations', 'stats'));
+        $categories = UnifiedPersonnel::CATEGORIES;
+        $knightsTypes = UnifiedPersonnel::KNIGHTS_TYPES;
+
+        return view('personnel.index', compact(
+            'personnel',
+            'category',
+            'subSpecialty',
+            'governorates',
+            'associations',
+            'stats',
+            'categories',
+            'knightsTypes'
+        ));
     }
 
     /**

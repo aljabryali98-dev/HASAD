@@ -277,6 +277,18 @@ class Phase2ArchitectureTest extends TestCase
     }
 
     /**
+     * التحقق من تحميل صفحة الكوادر والفرسان لجميع الفئات الفرعية بنجاح دون أي خطأ
+     */
+    public function test_personnel_index_renders_for_all_categories(): void
+    {
+        foreach (\App\Models\UnifiedPersonnel::CATEGORIES as $catKey => $catLabel) {
+            $response = $this->actingAs($this->user)->get(route('personnel.index', ['category' => $catKey]));
+            $response->assertOk();
+            $response->assertSee($catKey);
+        }
+    }
+
+    /**
      * 7. فحص القروض التمويلية البيضاء (0% فوائد) وحساب الرصيد المتبقي تلقائياً
      */
     public function test_white_loan_interest_free_and_auto_calculated_remaining_balance(): void

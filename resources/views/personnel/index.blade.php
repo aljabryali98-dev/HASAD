@@ -2,6 +2,11 @@
 
 @section('title', 'سجل الكوادر والفرسان والتدريب - نظام حصاد')
 
+@php
+    $categories = $categories ?? \App\Models\UnifiedPersonnel::CATEGORIES;
+    $knightsTypes = $knightsTypes ?? \App\Models\UnifiedPersonnel::KNIGHTS_TYPES;
+@endphp
+
 @section('content')
 <div class="container-fluid p-0">
 
@@ -83,25 +88,6 @@
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-2">
             <div class="d-flex flex-wrap gap-1">
-                @php
-                    $categories = [
-                        'فرسان الجمعية' => 'فرسان الجمعية (17 تخصص)',
-                        'باحثين' => 'الباحثين',
-                        'تدريب محاسبين' => 'تدريب محاسبين',
-                        'ضباط إقراض' => 'ضباط الإقراض',
-                        'صحة حيوانية' => 'الصحة الحيوانية',
-                        'إعلام' => 'الإعلام',
-                        'سكرتارية الجمعيات' => 'سكرتارية الجمعيات',
-                        'مدربي الجمعية' => 'مدربي الجمعية',
-                        'مساعدي مدربي الجمعية' => 'مساعدي مدربي الجمعية',
-                        'مدربين فرسان التنمية' => 'مدربين فرسان التنمية',
-                        'رائد تنموي' => 'الرائد التنموي',
-                        'مساعدين ثقافيين' => 'مساعدين ثقافيين',
-                        'الرائد الجامعي' => 'الرائد الجامعي',
-                        'تدريب مرشدين' => 'تدريب مرشدين',
-                        'طلاب زراعة' => 'طلاب الزراعة',
-                    ];
-                @endphp
                 @foreach($categories as $catKey => $catLabel)
                     <a href="{{ route('personnel.index', ['category' => $catKey]) }}" 
                        class="btn btn-sm {{ $category === $catKey ? 'btn-primary fw-bold' : 'btn-light text-dark' }}">
@@ -123,14 +109,6 @@
                             <label class="form-label small fw-bold text-muted">التخصص الفرعي للفارس</label>
                             <select name="sub_specialty" class="form-select">
                                 <option value="">-- جميع التخصصات (17 نوع) --</option>
-                                @php
-                                    $knightsTypes = [
-                                        'فرسان التنمية', 'فرسان الهندسة', 'فرسان التنمية الحضرية', 'فرسان التسويق',
-                                        'فرسان الديزل', 'فرسان المحاماة', 'فرسان الري', 'فرسان المسح', 'فرسان الألبان',
-                                        'فرسان الاستثمار', 'فرسان الأدوية', 'فرسان الدواء', 'فرسان المعالم الزراعية',
-                                        'فرسان الإبداع', 'فرسان المحليات', 'فرسان الإصلاحيات', 'فرسان الألغام'
-                                    ];
-                                @endphp
                                 @foreach($knightsTypes as $kType)
                                     <option value="{{ $kType }}" {{ $subSpecialty === $kType ? 'selected' : '' }}>{{ $kType }}</option>
                                 @endforeach
