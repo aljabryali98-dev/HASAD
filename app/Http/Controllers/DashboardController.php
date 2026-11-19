@@ -28,8 +28,8 @@ class DashboardController extends Controller
 
         // 2. إحصائيات المجاميع الإنتاجية
         $groupsCount = ProductiveGroup::count();
-        $totalGroupMembers = ProductiveGroup::sum('members_count');
-        $totalGroupArea = ProductiveGroup::sum('total_area');
+        $totalGroupMembers = ProductiveGroup::sum('total_members');
+        $totalGroupArea = ProductiveGroup::sum('productive_area');
 
         // 3. إحصائيات الكوادر والفرسان
         $personnelCount = UnifiedPersonnel::count();
