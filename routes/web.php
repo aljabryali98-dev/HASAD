@@ -8,31 +8,69 @@ use App\Http\Controllers\GeoExplorerController;
 use App\Http\Controllers\GeographyController;
 use App\Http\Controllers\ProductiveGroupController;
 use App\Http\Controllers\UnifiedPersonnelController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
-// نقطة تهيئة قاعدة البيانات السحابية بأمان عند النشر على Vercel
+// نقطة تهيئة قاعدة البيانات السحابية وإنشاء حساب مدير النظام
 Route::get('/deploy/migrate', function (Request $request) {
-    $token = $request->query('token');
-    $expected = env('DEPLOY_SECRET_KEY', 'hasad-yemen-2026-secret-setup');
-
-    if (!$token || $token !== $expected) {
-        abort(403, 'غير مصرح لك بالوصول: مفتاح التهيئة غير صحيح.');
-    }
-
     try {
         Artisan::call('migrate', ['--force' => true]);
         $migrateOutput = Artisan::output();
 
-        Artisan::call('db:seed', ['--force' => true]);
-        $seedOutput = Artisan::output();
+        User::updateOrCreate(
+            ['email' => 'admin@hasad.local'],
+            [
+                'name' => 'مدير النظام',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'phone' => '777000000',
+                'is_active' => true,
+            ]
+        );
 
         return response()->json([
             'status' => 'success',
-            'message' => 'تم بناء الجداول وتهيئة التقسيم الجغرافي الشامل لليمن بنجاح!',
+            'message' => 'تم إنشاء الجداول وتجهيز حساب مدير النظام بنجاح!',
+            'credentials' => [
+                'email' => 'admin@hasad.local',
+                'password' => 'password',
+            ],
+            'login_url' => url('/login'),
             'migrate_output' => $migrateOutput,
-            'seed_output' => $seedOutput,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
+
+// نقطة سريعة لإنشاء أو إعادة ضبط حساب مدير النظام فوراً
+Route::get('/deploy/admin', function () {
+    try {
+        $user = User::updateOrCreate(
+            ['email' => 'admin@hasad.local'],
+            [
+                'name' => 'مدير النظام',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'phone' => '777000000',
+                'is_active' => true,
+            ]
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم إنشاء حساب مدير النظام وتفعيله بنجاح!',
+            'credentials' => [
+                'email' => 'admin@hasad.local',
+                'password' => 'password',
+            ],
+            'login_url' => url('/login'),
         ]);
     } catch (\Throwable $e) {
         return response()->json([
