@@ -20,9 +20,7 @@ class ProductiveGroupController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
         $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get(['id', 'full_name', 'phone']);
 

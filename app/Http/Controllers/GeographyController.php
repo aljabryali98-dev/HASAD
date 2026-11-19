@@ -22,9 +22,7 @@ class GeographyController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Cache::remember('geo_govs_with_count', 3600, function () {
-            return Governorate::withCount('directorates')->orderBy('id')->get();
-        });
+        $governorates = Governorate::withCount('directorates')->orderBy('id')->get();
 
         $selectedGovId = $request->query('gov_id', $governorates->first()?->id);
         
@@ -61,9 +59,7 @@ class GeographyController extends Controller
      */
     public function manage(Request $request): View
     {
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
         $selectedGovId = $request->query('gov_id');
         $selectedDirId = $request->query('dir_id');

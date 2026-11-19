@@ -36,6 +36,9 @@
 </head>
 <body>
 
+    <!-- شريط تقدم التحميل اللحظي الفائق (Instant Top Loader) -->
+    <div id="hasadTopLoader" style="position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: linear-gradient(90deg, #10B981 0%, #065F46 100%); z-index: 999999; transition: width 0.25s ease, opacity 0.25s ease; opacity: 0; pointer-events: none;"></div>
+
     <!-- خلفية حجب للشاشات الصغيرة عند فتح القائمة -->
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
@@ -122,8 +125,52 @@
                     }
                 });
             });
+
+            // 1. تفعيل شريط التقدم اللحظي عند النقر على أي رابط داخلي
+            const loader = document.getElementById('hasadTopLoader');
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (link && link.href && !link.target && !link.href.startsWith('#') && !link.href.includes('javascript:') && !link.hasAttribute('download') && link.origin === window.location.origin) {
+                    if (link.closest('form') || link.dataset.bsToggle || link.href.includes('logout')) return;
+                    if (loader) {
+                        loader.style.opacity = '1';
+                        loader.style.width = '35%';
+                        setTimeout(() => { if (loader.style.opacity === '1') loader.style.width = '75%'; }, 120);
+                    }
+                }
+            });
+
+            // 2. التحميل الاستباقي الذكي (Instant Prefetching on Hover / Touch)
+            // يجلب كود الصفحة في ذاكرة المتصفح فور مرور المؤشر على الرابط قبل النقر الفعلي
+            const prefetchedUrls = new Set();
+            function prefetchLink(url) {
+                if (!url || prefetchedUrls.has(url) || url.includes('logout') || url.includes('#') || url.includes('javascript:')) return;
+                prefetchedUrls.add(url);
+                const prefetch = document.createElement('link');
+                prefetch.rel = 'prefetch';
+                prefetch.href = url;
+                prefetch.as = 'document';
+                document.head.appendChild(prefetch);
+            }
+
+            document.addEventListener('mouseover', function(e) {
+                const link = e.target.closest('a[href^="/"], a[href^="' + window.location.origin + '"]');
+                if (link && !link.dataset.bsToggle && !link.hasAttribute('download')) {
+                    prefetchLink(link.href);
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchstart', function(e) {
+                const link = e.target.closest('a[href^="/"], a[href^="' + window.location.origin + '"]');
+                if (link && !link.dataset.bsToggle && !link.hasAttribute('download')) {
+                    prefetchLink(link.href);
+                }
+            }, { passive: true });
         });
     </script>
+
+    <!-- محرك التصفح اللحظي الفائق (Instant.page Engine) -->
+    <script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/dist/instantpage.min.js" type="module" defer></script>
 
     @stack('scripts')
 </body>

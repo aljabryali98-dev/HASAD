@@ -20,9 +20,7 @@ class AssociationController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
         $query = Association::with([
             'governorate:id,name_ar,name',
@@ -84,9 +82,7 @@ class AssociationController extends Controller
      */
     public function create(): View
     {
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
         return view('associations.create', compact('governorates'));
     }
 

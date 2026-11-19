@@ -23,9 +23,7 @@ class UnifiedPersonnelController extends Controller
         $category = $request->query('category', 'فرسان الجمعية');
         $subSpecialty = $request->query('sub_specialty');
 
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
         $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
 
         $query = UnifiedPersonnel::with([

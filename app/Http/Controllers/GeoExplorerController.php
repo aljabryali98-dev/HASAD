@@ -27,9 +27,7 @@ class GeoExplorerController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
         $selectedGovId = $request->query('gov_id') ?? $request->query('governorate_id', 2);
         $selectedDirId = $request->query('dir_id') ?? $request->query('directorate_id');
