@@ -33,6 +33,11 @@
             <i class="fa-solid fa-file-excel text-success"></i>
         </a>
 
+        <!-- زر تثبيت تطبيق حصاد (PWA Universal Install) -->
+        <button type="button" class="btn-header-action" id="btnInstallAppHeader" onclick="handlePwaInstallClick()" title="تثبيت التطبيق على جهازك (لابتوب / أندرويد / آيفون)">
+            <i class="fa-solid fa-mobile-screen-button text-success"></i>
+        </button>
+
         <!-- زر لوحة الأوامر الذكية (Command Palette Button) -->
         <button type="button" class="btn-header-action" onclick="openCommandPalette()" title="لوحة الأوامر الذكية (Ctrl + K)">
             <i class="fa-solid fa-terminal"></i>

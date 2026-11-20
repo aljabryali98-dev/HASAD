@@ -163,6 +163,31 @@
                     <span class="badge bg-emerald-500/10 text-success border border-emerald-500/20 ms-auto font-monospace" style="font-size: 0.65rem;">شامل</span>
                 </a>
             </li>
+
+            <!-- تثبيت تطبيق حصاد (PWA Universal Install) -->
+            <li>
+                <a href="javascript:void(0)" onclick="handlePwaInstallClick()" class="side-menu__item">
+                    <i class="fa-solid fa-mobile-screen-button text-success" data-lucide="smartphone"></i>
+                    <span>تثبيت التطبيق (PWA)</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle ms-auto" style="font-size: 0.65rem;">تثبيت</span>
+                </a>
+            </li>
         </ul>
+
+        <!-- بطاقة تثبيت التطبيق السريع -->
+        <div class="px-3 py-2 mt-2">
+            <div class="p-2 rounded-3 border text-center" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2) !important;">
+                <div class="d-flex align-items-center justify-content-center gap-1 text-success fw-bold small mb-1" style="font-size: 0.8rem;">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span>تثبيت على أجهزتك</span>
+                </div>
+                <div class="text-muted small mb-2" style="font-size: 0.7rem; line-height: 1.3;">
+                    لابتوب • أندرويد • آيفون
+                </div>
+                <button type="button" class="btn btn-sm btn-success w-100 rounded-pill py-1 small fw-semibold shadow-xs" onclick="handlePwaInstallClick()" style="font-size: 0.75rem;">
+                    <i class="fa-solid fa-download me-1"></i> تثبيت التطبيق
+                </button>
+            </div>
+        </div>
     </div>
 </aside>

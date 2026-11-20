@@ -81,6 +81,9 @@ Route::get('/deploy/admin', function () {
     }
 });
 
+// بوابة تثبيت تطبيق حصاد (PWA Universal Install Portal)
+Route::view('/app/install', 'pwa.install')->name('pwa.install');
+
 // مسارات المصادقة للضيوف (Guest Authentication Routes)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

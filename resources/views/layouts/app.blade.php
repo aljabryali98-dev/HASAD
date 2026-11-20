@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#064E3B">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="حصاد ERP">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/icons/icon-192x192.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    
     <title>@yield('title', 'نظام حصاد - المنظومة الوطنية للرصد والتقييم')</title>
 
     <!-- تسريع الاتصال بالنطاقات الخارجية (DNS Prefetch & Preconnect) -->
@@ -330,7 +341,8 @@
             { title: 'المشاتل الزراعية المعتمدة', category: 'الزراعة', icon: 'fa-tree', url: '{{ route('general.nurseries.index') }}' },
             { title: 'المبادرات المجتمعية الميدانية', category: 'المبادرات', icon: 'fa-handshake', url: '{{ route('general.initiatives.index') }}' },
             { title: 'تفعيل الوضع الليلي / الفاتح', category: 'المظهر', icon: 'fa-circle-half-stroke', action: 'toggleTheme' },
-            { title: 'طباعة رسمية A4 للصفحة الحالية', category: 'أدوات', icon: 'fa-print', action: 'print' }
+            { title: 'طباعة رسمية A4 للصفحة الحالية', category: 'أدوات', icon: 'fa-print', action: 'print' },
+            { title: 'تثبيت تطبيق حصاد على جهازك (لابتوب / أندرويد / آيفون)', category: 'تطبيق', icon: 'fa-mobile-screen-button', action: 'installPwa' }
         ];
 
         function openCommandPalette() {
@@ -389,6 +401,8 @@
                 toggleThemeMode();
             } else if (cmd.action === 'print') {
                 window.print();
+            } else if (cmd.action === 'installPwa') {
+                handlePwaInstallClick();
             }
         }
 
@@ -543,6 +557,12 @@
             </div>
         @endif
     </div>
+
+    <!-- نافذة تثبيت التطبيق PWA Modal -->
+    @include('partials.pwa-modal')
+
+    <!-- سكريبت تثبيت وتفعيل PWA لكافة الأجهزة -->
+    <script src="{{ asset('js/pwa-install.js') }}"></script>
 
     @stack('scripts')
 </body>

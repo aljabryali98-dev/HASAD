@@ -6,6 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>تسجيل الدخول - نظام حصاد المركزي</title>
 
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#064E3B">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="حصاد ERP">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/icons/icon-192x192.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
     <!-- الخطوط الرسمية -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -242,6 +253,13 @@
                 </button>
             </form>
 
+            <!-- زر تثبيت التطبيق على الهواتف والكمبيوتر -->
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1 fw-semibold w-100" onclick="handlePwaInstallClick()" style="font-size: 0.8rem; background: rgba(16, 185, 129, 0.04); border-color: rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-mobile-screen-button me-1"></i> تثبيت تطبيق حصاد (لابتوب / أندرويد / آيفون)
+                </button>
+            </div>
+
             <!-- شارة الأمان السيبراني -->
             <div class="security-badge text-center mt-4">
                 <i class="fa-solid fa-shield-halved text-success me-1"></i>
@@ -292,5 +310,10 @@
             }
         }, { passive: true });
     </script>
+    <!-- نافذة تثبيت التطبيق PWA Modal -->
+    @include('partials.pwa-modal')
+
+    <!-- سكريبت تثبيت PWA لكافة الأجهزة -->
+    <script src="{{ asset('js/pwa-install.js') }}"></script>
 </body>
 </html>
