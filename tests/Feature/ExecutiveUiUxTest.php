@@ -144,4 +144,25 @@ class ExecutiveUiUxTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('copyable-badge');
     }
+
+    public function test_glassmorphism_aurora_mesh_and_lucide_integration(): void
+    {
+        $user = $this->getAuthenticatedUser();
+
+        // 1. اختبار شاشة تسجيل الدخول
+        $loginRes = $this->get(route('login'));
+        $loginRes->assertStatus(200);
+        $loginRes->assertSee('aurora-bg-mesh');
+        $loginRes->assertSee('spotlight-card');
+        $loginRes->assertSee('lucide@latest');
+
+        // 2. اختبار لوحة المؤشرات
+        $dashRes = $this->actingAs($user)->get(route('dashboard'));
+        $dashRes->assertStatus(200);
+        $dashRes->assertSee('aurora-bg-mesh');
+        $dashRes->assertSee('spotlight-card');
+        $dashRes->assertSee('data-lucide');
+        $dashRes->assertSee('lucide@latest');
+        $dashRes->assertSee('stat-num');
+    }
 }

@@ -22,8 +22,9 @@
     <!-- Bootstrap 5 RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
-    <!-- الأيقونات (FontAwesome) -->
+    <!-- الأيقونات (FontAwesome & Lucide) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- مكتبات المدخلات والجداول -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
@@ -45,6 +46,13 @@
     @stack('styles')
 </head>
 <body>
+
+    <!-- خلفية الشفق الزمرّدي والنعناعي المتوهجة (Soft Aurora Mesh Gradients) -->
+    <div class="aurora-bg-mesh" aria-hidden="true">
+        <div class="aurora-blob aurora-blob-1"></div>
+        <div class="aurora-blob aurora-blob-2"></div>
+        <div class="aurora-blob aurora-blob-3"></div>
+    </div>
 
     <!-- ترويسة الطباعة الرسمية للتقارير التنفيذية (@media print) -->
     <div class="hasad-print-header">
@@ -465,7 +473,32 @@
                     setTimeout(() => toast.remove(), 350);
                 });
             }, 5500);
+
+            // تفعيل أيقونات Lucide الرشيقة بدقة وحجم 1.5 Stroke
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons({
+                    attrs: {
+                        'stroke-width': 1.5
+                    }
+                });
+            }
         });
+
+        // تأثير كشاف الضوء الأخضر اللحظي على البطاقات الزجاجية (Cursor-tracking Soft Green Spotlight)
+        document.addEventListener('pointermove', function(e) {
+            const cards = document.querySelectorAll('.spotlight-card');
+            for (let i = 0; i < cards.length; i++) {
+                const card = cards[i];
+                const rect = card.getBoundingClientRect();
+                if (e.clientX >= rect.left - 40 && e.clientX <= rect.right + 40 &&
+                    e.clientY >= rect.top - 40 && e.clientY <= rect.bottom + 40) {
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', x + 'px');
+                    card.style.setProperty('--mouse-y', y + 'px');
+                }
+            }
+        }, { passive: true });
     </script>
 
     <!-- نافذة لوحة الأوامر الذكية العائمة (Command Palette Backdrop & Modal) -->

@@ -3,7 +3,7 @@
     <div class="sidebar-brand-wrapper">
         <a href="{{ route('dashboard') }}" class="sidebar-brand text-decoration-none">
             <div class="sidebar-brand-icon">
-                <i class="fa-solid fa-seedling"></i>
+                <i class="fa-solid fa-seedling" data-lucide="sprout"></i>
             </div>
             <div class="sidebar-brand-text">
                 <div class="d-flex align-items-center gap-1">
@@ -20,7 +20,7 @@
         <ul class="side-menu">
             <li>
                 <a href="{{ route('dashboard') }}" class="side-menu__item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="fa-solid fa-house"></i>
+                    <i class="fa-solid fa-house" data-lucide="layout-dashboard"></i>
                     <span>لوحة التحكم الرئيسية</span>
                 </a>
             </li>
@@ -30,7 +30,7 @@
             <!-- القسم الأول: الجمعيات التعاونية -->
             <li>
                 <a href="{{ route('associations.index') }}" class="side-menu__item {{ request()->routeIs('associations.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-building-columns"></i>
+                    <i class="fa-solid fa-building-columns" data-lucide="landmark"></i>
                     <span>الجمعيات التعاونية</span>
                 </a>
             </li>
@@ -38,7 +38,7 @@
             <!-- القسم الثاني: المجاميع الإنتاجية -->
             <li>
                 <a href="{{ route('productive-groups.index') }}" class="side-menu__item {{ request()->routeIs('productive-groups.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-people-roof"></i>
+                    <i class="fa-solid fa-people-roof" data-lucide="users"></i>
                     <span>المجاميع الإنتاجية</span>
                 </a>
             </li>
@@ -48,7 +48,7 @@
             <!-- المحور (أ): الكوادر والفرسان والتدريب -->
             <li>
                 <a href="{{ route('personnel.index') }}" class="side-menu__item {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-user-graduate"></i>
+                    <i class="fa-solid fa-user-graduate" data-lucide="graduation-cap"></i>
                     <span>الكوادر والفرسان والتدريب</span>
                 </a>
             </li>
@@ -57,7 +57,7 @@
             <li>
                 <a class="side-menu__item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuProjects" role="button" aria-expanded="{{ request()->routeIs('general.projects.*', 'general.awareness.*', 'general.initiatives.*') ? 'true' : 'false' }}">
                     <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-diagram-project"></i>
+                        <i class="fa-solid fa-diagram-project" data-lucide="folder-kanban"></i>
                         <span>المشاريع والمبادرات</span>
                     </div>
                     <i class="fa-solid fa-chevron-down small text-muted" style="font-size: 0.75rem;"></i>
@@ -66,19 +66,19 @@
                     <ul class="side-menu__sub">
                         <li>
                             <a href="{{ route('general.projects.index') }}" class="side-menu__sub-item {{ request()->routeIs('general.projects.*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-circle"></i>
+                                <i class="fa-solid fa-circle" data-lucide="briefcase"></i>
                                 <span>مشاريع الجمعيات</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('general.awareness.index') }}" class="side-menu__sub-item {{ request()->routeIs('general.awareness.*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-circle"></i>
+                                <i class="fa-solid fa-circle" data-lucide="megaphone"></i>
                                 <span>التوعية بالتطوع والجمعيات</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('general.initiatives.index') }}" class="side-menu__sub-item {{ request()->routeIs('general.initiatives.*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-circle"></i>
+                                <i class="fa-solid fa-circle" data-lucide="handshake"></i>
                                 <span>المبادرات المجتمعية</span>
                             </a>
                         </li>
@@ -90,7 +90,7 @@
             <li>
                 <a class="side-menu__item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuAgriculture" role="button" aria-expanded="{{ request()->routeIs('general.crops.*', 'general.nurseries.*', 'general.farmers.*') ? 'true' : 'false' }}">
                     <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-wheat-awn"></i>
+                        <i class="fa-solid fa-wheat-awn" data-lucide="wheat"></i>
                         <span>الزراعة والمحاصيل</span>
                     </div>
                     <i class="fa-solid fa-chevron-down small text-muted" style="font-size: 0.75rem;"></i>
@@ -99,19 +99,19 @@
                     <ul class="side-menu__sub">
                         <li>
                             <a href="{{ route('general.crops.index') }}" class="side-menu__sub-item {{ request()->routeIs('general.crops.*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-circle"></i>
+                                <i class="fa-solid fa-circle" data-lucide="sprout"></i>
                                 <span>سجل المحاصيل والإنتاج</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('general.nurseries.index') }}" class="side-menu__sub-item {{ request()->routeIs('general.nurseries.*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-circle"></i>
+                                <i class="fa-solid fa-circle" data-lucide="trees"></i>
                                 <span>المشاتل الزراعية</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('general.farmers.index') }}" class="side-menu__sub-item {{ request()->routeIs('general.farmers.*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-circle"></i>
+                                <i class="fa-solid fa-circle" data-lucide="tractor"></i>
                                 <span>المزارعون والأراضي</span>
                             </a>
                         </li>
@@ -122,7 +122,7 @@
             <!-- المحور (د): التمويل والتمكين -->
             <li>
                 <a href="{{ route('general.loans.index') }}" class="side-menu__item {{ request()->routeIs('general.loans.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <i class="fa-solid fa-hand-holding-dollar" data-lucide="hand-coins"></i>
                     <span>القروض التمويلية البيضاء</span>
                 </a>
             </li>
@@ -132,7 +132,7 @@
             <!-- مستكشف النطاق الجغرافي الشامل (Geo-Explorer) -->
             <li>
                 <a href="{{ route('geo-explorer.index') }}" class="side-menu__item {{ request()->routeIs('geo-explorer.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-earth-asia"></i>
+                    <i class="fa-solid fa-earth-asia" data-lucide="globe"></i>
                     <span>المستكشف الجغرافي (34 قسماً)</span>
                 </a>
             </li>
@@ -140,7 +140,7 @@
             <!-- التقسيم الجغرافي الرسمي -->
             <li>
                 <a href="{{ route('geography.index') }}" class="side-menu__item {{ request()->routeIs('geography.index') ? 'active' : '' }}">
-                    <i class="fa-solid fa-map-location-dot"></i>
+                    <i class="fa-solid fa-map-location-dot" data-lucide="map-pin"></i>
                     <span>التقسيم الإداري الرسمي</span>
                 </a>
             </li>
@@ -148,7 +148,7 @@
             <!-- إدارة النطاق والجمعيات والقرى -->
             <li>
                 <a href="{{ route('geography.manage') }}" class="side-menu__item {{ request()->routeIs('geography.manage') ? 'active' : '' }}">
-                    <i class="fa-solid fa-network-wired"></i>
+                    <i class="fa-solid fa-network-wired" data-lucide="network"></i>
                     <span>إدارة النطاق والقرى والجمعيات</span>
                 </a>
             </li>

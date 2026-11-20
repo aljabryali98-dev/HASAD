@@ -14,8 +14,9 @@
     <!-- Bootstrap 5 RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
-    <!-- الأيقونات (FontAwesome) -->
+    <!-- الأيقونات (FontAwesome & Lucide) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- ملف التنسيق المؤسسي -->
     <link href="{{ asset('css/hasad-theme.css') }}" rel="stylesheet">
@@ -26,11 +27,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: 
-                radial-gradient(circle at 50% 15%, rgba(6, 95, 70, 0.08) 0%, rgba(248, 250, 252, 1) 75%),
-                linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+            background-color: var(--hasad-bg);
             padding: 24px;
             position: relative;
+            overflow-x: hidden;
         }
 
         /* نمط هندسي خافت في الخلفية */
@@ -40,7 +40,7 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background-image: radial-gradient(#065F46 0.75px, transparent 0.75px);
             background-size: 24px 24px;
-            opacity: 0.04;
+            opacity: 0.03;
             pointer-events: none;
         }
 
@@ -52,13 +52,16 @@
         }
 
         .login-card-box {
-            background: #FFFFFF;
-            border: 1px solid var(--hasad-card-border);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
             border-radius: var(--hasad-radius-xl);
-            box-shadow: 0 20px 45px -10px rgba(6, 95, 70, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 45px -10px rgba(6, 78, 59, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95);
             padding: 38px 34px;
             position: relative;
             overflow: hidden;
+            transition: var(--hasad-transition);
         }
 
         .login-card-box::before {
@@ -129,22 +132,26 @@
         }
 
         .btn-login-submit {
-            background: linear-gradient(135deg, var(--hasad-primary) 0%, var(--hasad-primary-hover) 100%);
-            border: none;
+            background: linear-gradient(135deg, #10B981 0%, #0D9488 100%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             color: #FFFFFF;
             font-weight: 700;
             font-size: 1.02rem;
             padding: 12px;
             border-radius: var(--hasad-radius);
-            box-shadow: 0 4px 14px rgba(6, 95, 70, 0.28);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
             transition: var(--hasad-transition);
         }
 
         .btn-login-submit:hover {
-            background: linear-gradient(135deg, var(--hasad-primary-hover) 0%, var(--hasad-primary-active) 100%);
-            box-shadow: 0 6px 20px rgba(6, 95, 70, 0.38);
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, #059669 0%, #0F766E 100%);
+            box-shadow: 0 8px 24px -2px rgba(16, 185, 129, 0.45);
+            transform: translateY(-2px);
             color: #FFFFFF;
+        }
+
+        .btn-login-submit:active {
+            transform: scale(0.96);
         }
 
         .security-badge {
@@ -159,13 +166,20 @@
 </head>
 <body>
 
+    <!-- خلفية الشفق الزمرّدي والنعناعي المتوهجة (Soft Aurora Mesh Gradients) -->
+    <div class="aurora-bg-mesh" aria-hidden="true">
+        <div class="aurora-blob aurora-blob-1"></div>
+        <div class="aurora-blob aurora-blob-2"></div>
+        <div class="aurora-blob aurora-blob-3"></div>
+    </div>
+
     <div class="login-card-container">
-        <div class="login-card-box">
+        <div class="login-card-box spotlight-card">
             
             <!-- الهوية والشعار المؤسسي -->
             <div class="text-center mb-4">
                 <div class="login-brand-icon-wrapper">
-                    <i class="fa-solid fa-seedling"></i>
+                    <i class="fa-solid fa-seedling" data-lucide="sprout"></i>
                 </div>
                 <h4 class="fw-bold mb-1 text-dark">نظام حصاد</h4>
                 <p class="text-muted small mb-1">المنظومة الوطنية للرصد والتقييم والتحليل التعاوني</p>
@@ -278,6 +292,23 @@
                 }
             });
         }
+
+        // تفعيل أيقونات Lucide
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+        }
+
+        // تأثير كشاف الضوء الأخضر اللحظي (Cursor-tracking Soft Green Spotlight)
+        document.addEventListener('pointermove', function(e) {
+            const card = document.querySelector('.spotlight-card');
+            if (card) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', x + 'px');
+                card.style.setProperty('--mouse-y', y + 'px');
+            }
+        }, { passive: true });
     </script>
 </body>
 </html>

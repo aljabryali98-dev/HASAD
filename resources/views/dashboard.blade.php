@@ -31,36 +31,36 @@
     <!-- بطاقات الإجراءات والانتقال السريع الفاخرة -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <a href="{{ route('associations.create') }}" class="action-card h-100">
+            <a href="{{ route('associations.create') }}" class="action-card spotlight-card fade-in-up delay-1 h-100">
                 <div class="action-icon kpi-icon-emerald">
-                    <i class="fa-solid fa-building-ngo"></i>
+                    <i class="fa-solid fa-building-ngo" data-lucide="plus-circle"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">تسجيل جمعية</h6>
                 <span class="text-muted small d-block">إضافة وتأسيس جمعية جديدة</span>
             </a>
         </div>
         <div class="col-6 col-lg-3">
-            <a href="{{ route('productive-groups.index') }}" class="action-card h-100">
+            <a href="{{ route('productive-groups.index') }}" class="action-card spotlight-card fade-in-up delay-2 h-100">
                 <div class="action-icon kpi-icon-emerald">
-                    <i class="fa-solid fa-people-roof"></i>
+                    <i class="fa-solid fa-people-roof" data-lucide="users"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">المجاميع الإنتاجية</h6>
                 <span class="text-muted small d-block">المتابعة وتكليف الميسرين</span>
             </a>
         </div>
         <div class="col-6 col-lg-3">
-            <a href="{{ route('personnel.index') }}" class="action-card h-100">
+            <a href="{{ route('personnel.index') }}" class="action-card spotlight-card fade-in-up delay-3 h-100">
                 <div class="action-icon kpi-icon-blue">
-                    <i class="fa-solid fa-user-graduate"></i>
+                    <i class="fa-solid fa-user-graduate" data-lucide="graduation-cap"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">بنك الفرسان والكوادر</h6>
                 <span class="text-muted small d-block">17 تخصصاً للفرسان والباحثين</span>
             </a>
         </div>
         <div class="col-6 col-lg-3">
-            <a href="{{ route('general.loans.index') }}" class="action-card h-100">
+            <a href="{{ route('general.loans.index') }}" class="action-card spotlight-card fade-in-up delay-4 h-100">
                 <div class="action-icon kpi-icon-amber">
-                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <i class="fa-solid fa-hand-holding-dollar" data-lucide="hand-coins"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">محفظة القروض البيضاء</h6>
                 <span class="text-muted small d-block">تمويل تمكيني 0% فوائد</span>
@@ -72,11 +72,11 @@
     <div class="row g-3 mb-4">
         <!-- 1. الجمعيات التعاونية -->
         <div class="col-md-6 col-xl-3">
-            <div class="kpi-master-card h-100">
+            <div class="kpi-master-card spotlight-card fade-in-up delay-1 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted fw-bold small">الجمعيات التعاونية</span>
                     <div class="kpi-icon-badge kpi-icon-emerald">
-                        <i class="fa-solid fa-building-columns"></i>
+                        <i class="fa-solid fa-building-columns" data-lucide="landmark"></i>
                     </div>
                 </div>
                 <h3 class="stat-num text-dark mb-1">{{ number_format($kpis['associations_count']) }}</h3>
@@ -92,11 +92,11 @@
 
         <!-- 2. المجاميع الإنتاجية -->
         <div class="col-md-6 col-xl-3">
-            <div class="kpi-master-card h-100">
+            <div class="kpi-master-card spotlight-card fade-in-up delay-2 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted fw-bold small">المجاميع الإنتاجية</span>
                     <div class="kpi-icon-badge kpi-icon-emerald">
-                        <i class="fa-solid fa-people-group"></i>
+                        <i class="fa-solid fa-people-group" data-lucide="users"></i>
                     </div>
                 </div>
                 <h3 class="stat-num text-dark mb-1">{{ number_format($kpis['groups_count']) }}</h3>
@@ -112,11 +112,11 @@
 
         <!-- 3. الكوادر وفرسان التنمية -->
         <div class="col-md-6 col-xl-3">
-            <div class="kpi-master-card h-100">
+            <div class="kpi-master-card spotlight-card fade-in-up delay-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted fw-bold small">الكوادر والفرسان الميدانيين</span>
                     <div class="kpi-icon-badge kpi-icon-blue">
-                        <i class="fa-solid fa-user-graduate"></i>
+                        <i class="fa-solid fa-user-graduate" data-lucide="graduation-cap"></i>
                     </div>
                 </div>
                 <h3 class="stat-num text-dark mb-1">{{ number_format($kpis['personnel_count']) }}</h3>
@@ -132,11 +132,11 @@
 
         <!-- 4. محفظة القروض البيضاء -->
         <div class="col-md-6 col-xl-3">
-            <div class="kpi-master-card h-100">
+            <div class="kpi-master-card spotlight-card fade-in-up delay-4 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted fw-bold small">القروض البيضاء (0% فوائد)</span>
                     <div class="kpi-icon-badge kpi-icon-amber">
-                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                        <i class="fa-solid fa-hand-holding-dollar" data-lucide="hand-coins"></i>
                     </div>
                 </div>
                 <h3 class="stat-num text-dark mb-1">
@@ -157,7 +157,7 @@
     <div class="row g-4 mb-4">
         <!-- مخطط 1: مؤشرات أداء وسداد محفظة القروض البيضاء -->
         <div class="col-lg-6">
-            <div class="chart-container-card h-100">
+            <div class="chart-container-card spotlight-card fade-in-up delay-2 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
@@ -174,7 +174,7 @@
 
         <!-- مخطط 2: تصنيف القوى البشرية والفرسان والكوادر الميدانية -->
         <div class="col-lg-6">
-            <div class="chart-container-card h-100">
+            <div class="chart-container-card spotlight-card fade-in-up delay-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
