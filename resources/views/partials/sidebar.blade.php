@@ -1,13 +1,16 @@
 <aside class="app-sidebar">
-    <!-- الشعار والهوية المؤسسية -->
+    <!-- الشعار والهوية المؤسسية السيادية -->
     <div class="sidebar-brand-wrapper">
-        <a href="{{ route('dashboard') }}" class="sidebar-brand">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand text-decoration-none">
             <div class="sidebar-brand-icon">
                 <i class="fa-solid fa-seedling"></i>
             </div>
             <div class="sidebar-brand-text">
-                <h5>نظام حصاد</h5>
-                <span>المنظومة الوطنية للرصد والتقييم</span>
+                <div class="d-flex align-items-center gap-1">
+                    <h5 class="mb-0">نظام حصاد</h5>
+                    <span class="badge bg-success-subtle text-success border px-1 py-0 font-monospace" style="font-size: 0.65rem;">ERP</span>
+                </div>
+                <span>الجمهورية اليمنية - اللجنة الزراعية العليا</span>
             </div>
         </a>
     </div>

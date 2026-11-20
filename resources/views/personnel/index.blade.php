@@ -187,7 +187,13 @@
                         <tbody>
                             @foreach($personnel as $p)
                                 <tr>
-                                    <td><span class="badge bg-light text-dark font-monospace border">{{ $p->code }}</span></td>
+                                    <td>
+                                        <span class="badge bg-light text-dark font-monospace border copyable-badge" 
+                                              onclick="copyToClipboard('{{ $p->code }}', this)" 
+                                              title="انقر لنسخ الكود">
+                                            {{ $p->code }}
+                                        </span>
+                                    </td>
                                     <td class="fw-bold text-dark">{{ $p->full_name }}</td>
                                     <td>
                                         <span class="badge-status badge-status-info">
@@ -216,7 +222,15 @@
                                         @endif
                                     </td>
                                     <td>{{ $p->education_level ?: '-' }} {{ $p->specialization ? "({$p->specialization})" : '' }}</td>
-                                    <td class="font-monospace">{{ $p->phone ?: '-' }}</td>
+                                    <td class="font-monospace">
+                                        @if($p->phone)
+                                            <span class="copyable-badge text-dark" onclick="copyToClipboard('{{ $p->phone }}', this)" title="انقر لنسخ رقم الهاتف">
+                                                <i class="fa-solid fa-phone small text-muted me-1"></i>{{ $p->phone }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @if($p->is_activated_in_field)
                                             <span class="badge-status badge-status-success">

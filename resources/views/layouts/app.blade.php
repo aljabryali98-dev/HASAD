@@ -172,6 +172,113 @@
     <!-- محرك التصفح اللحظي الفائق (Instant.page Engine) -->
     <script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/dist/instantpage.min.js" type="module" defer></script>
 
+    <!-- مكتبة الرسوم البيانية التفاعلية الفائقة (ApexCharts) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- وظائف التفاعل الفاخرة (Micro-interactions & Polish) -->
+    <script>
+        // نسخ سريع إلى الحافظة (One-Click Clipboard Copy)
+        function copyToClipboard(text, btnElement) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(function() {
+                showToast('تم النسخ إلى الحافظة: ' + text, 'success');
+                if (btnElement) {
+                    const originalHtml = btnElement.innerHTML;
+                    btnElement.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                    setTimeout(() => { btnElement.innerHTML = originalHtml; }, 1600);
+                }
+            }).catch(function() {
+                showToast('تعذر النسخ التلقائي', 'danger');
+            });
+        }
+
+        // تبديل وضع ملء الشاشة (Fullscreen Toggle)
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                }
+            }
+        }
+
+        // نظام الإشعارات العائمة التفاعلية (Toast System)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('hasadToastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `hasad-toast hasad-toast-${type} shadow-lg`;
+            const icon = type === 'success' ? 'fa-circle-check text-success' : (type === 'danger' ? 'fa-circle-exclamation text-danger' : 'fa-circle-info text-primary');
+            const title = type === 'success' ? 'إشعار فوري' : (type === 'danger' ? 'تنبيه' : 'معلومة');
+            toast.innerHTML = `
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-4"><i class="fa-solid ${icon}"></i></div>
+                    <div>
+                        <strong class="d-block text-dark small">${title}</strong>
+                        <span class="text-muted small">${message}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close small" onclick="this.closest('.hasad-toast').remove()"></button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 350);
+            }, 4500);
+        }
+
+        // اختصار لوحة المفاتيح للبحث السريع (Ctrl + K أو Cmd + K)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                const searchInput = document.querySelector('.header-search input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+        });
+
+        // إخفاء تنبيهات الجلسة تلقائياً بعد 5 ثوانٍ
+        setTimeout(function() {
+            document.querySelectorAll('#hasadToastContainer .hasad-toast').forEach(function(toast) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 350);
+            });
+        }, 5500);
+    </script>
+
+    <!-- حاوية الإشعارات العائمة التفاعلية (Floating Toast Notifications) -->
+    <div class="hasad-toast-container" id="hasadToastContainer">
+        @if(session('success'))
+            <div class="hasad-toast hasad-toast-success shadow-lg">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-success fs-4"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <strong class="d-block text-dark small">تم الإجراء بنجاح</strong>
+                        <span class="text-muted small">{{ session('success') }}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close small" onclick="this.closest('.hasad-toast').remove()"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="hasad-toast hasad-toast-danger shadow-lg">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-danger fs-4"><i class="fa-solid fa-circle-exclamation"></i></div>
+                    <div>
+                        <strong class="d-block text-dark small">تنبيه بالنظام</strong>
+                        <span class="text-muted small">{{ session('error') }}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close small" onclick="this.closest('.hasad-toast').remove()"></button>
+            </div>
+        @endif
+    </div>
+
     @stack('scripts')
 </body>
 </html>

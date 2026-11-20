@@ -88,57 +88,67 @@
         </div>
     </div>
 
-    <!-- بطاقة البحث والفلترة المؤسسية -->
+    <!-- بطاقة البحث والفلترة المؤسسية (قابلة للطي) -->
     <div class="filter-card">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <i class="fa-solid fa-filter text-success"></i>
-            <h6 class="fw-bold mb-0 text-dark">تصفية وبحث متقدم في الجمعيات</h6>
-        </div>
-        <form method="GET" action="{{ route('associations.index') }}">
-            <div class="row g-3">
-                <div class="col-12">
-                    <x-location-hierarchy-selector 
-                        :governorateId="request('gov_id')"
-                        :directorateId="request('dir_id')"
-                        :uzlahId="request('uzl_id')"
-                        :showAddButton="false"
-                    />
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label small fw-bold">حالة الجمعية</label>
-                    <select name="status" class="form-select">
-                        <option value="">-- جميع الحالات --</option>
-                        <option value="نشطة" {{ request('status') === 'نشطة' ? 'selected' : '' }}>نشطة</option>
-                        <option value="متوقفة" {{ request('status') === 'متوقفة' ? 'selected' : '' }}>متوقفة</option>
-                        <option value="تحت التأسيس" {{ request('status') === 'تحت التأسيس' ? 'selected' : '' }}>تحت التأسيس</option>
-                        <option value="متعثرة" {{ request('status') === 'متعثرة' ? 'selected' : '' }}>متعثرة</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label small fw-bold">نوع الجمعية</label>
-                    <select name="type" class="form-select">
-                        <option value="">-- جميع الأنواع --</option>
-                        <option value="زراعية" {{ request('type') === 'زراعية' ? 'selected' : '' }}>زراعية</option>
-                        <option value="متعددة الأغراض" {{ request('type') === 'متعددة الأغراض' ? 'selected' : '' }}>متعددة الأغراض</option>
-                        <option value="تسويقية" {{ request('type') === 'تسويقية' ? 'selected' : '' }}>تسويقية</option>
-                        <option value="حيوانية ونحلية" {{ request('type') === 'حيوانية ونحلية' ? 'selected' : '' }}>حيوانية ونحلية</option>
-                        <option value="استهلاكية" {{ request('type') === 'استهلاكية' ? 'selected' : '' }}>استهلاكية</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label small fw-bold">بحث بالاسم أو الكود أو الرئيس</label>
-                    <input type="text" name="search" class="form-control" placeholder="اسم الجمعية، الكود، رئيس الجمعية..." value="{{ request('search') }}">
-                </div>
-                <div class="col-12 col-md-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-hasad-primary w-100">
-                        <i class="fa-solid fa-magnifying-glass me-1"></i> بحث
-                    </button>
-                    <a href="{{ route('associations.index') }}" class="btn btn-outline-secondary" title="إلغاء التصفية">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </a>
-                </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-filter text-success"></i>
+                <h6 class="fw-bold mb-0 text-dark">تصفية وبحث متقدم في الجمعيات</h6>
+                @if(request()->hasAny(['gov_id', 'dir_id', 'uzl_id', 'status', 'type', 'search']))
+                    <span class="badge bg-success-subtle text-success border px-2 py-1 small">تصفية نشطة</span>
+                @endif
             </div>
-        </form>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filterFormCollapse" aria-expanded="true" aria-controls="filterFormCollapse">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="collapse show" id="filterFormCollapse">
+            <form method="GET" action="{{ route('associations.index') }}">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <x-location-hierarchy-selector 
+                            :governorateId="request('gov_id')"
+                            :directorateId="request('dir_id')"
+                            :uzlahId="request('uzl_id')"
+                            :showAddButton="false"
+                        />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small fw-bold">حالة الجمعية</label>
+                        <select name="status" class="form-select">
+                            <option value="">-- جميع الحالات --</option>
+                            <option value="نشطة" {{ request('status') === 'نشطة' ? 'selected' : '' }}>نشطة</option>
+                            <option value="متوقفة" {{ request('status') === 'متوقفة' ? 'selected' : '' }}>متوقفة</option>
+                            <option value="تحت التأسيس" {{ request('status') === 'تحت التأسيس' ? 'selected' : '' }}>تحت التأسيس</option>
+                            <option value="متعثرة" {{ request('status') === 'متعثرة' ? 'selected' : '' }}>متعثرة</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small fw-bold">نوع الجمعية</label>
+                        <select name="type" class="form-select">
+                            <option value="">-- جميع الأنواع --</option>
+                            <option value="زراعية" {{ request('type') === 'زراعية' ? 'selected' : '' }}>زراعية</option>
+                            <option value="متعددة الأغراض" {{ request('type') === 'متعددة الأغراض' ? 'selected' : '' }}>متعددة الأغراض</option>
+                            <option value="تسويقية" {{ request('type') === 'تسويقية' ? 'selected' : '' }}>تسويقية</option>
+                            <option value="حيوانية ونحلية" {{ request('type') === 'حيوانية ونحلية' ? 'selected' : '' }}>حيوانية ونحلية</option>
+                            <option value="استهلاكية" {{ request('type') === 'استهلاكية' ? 'selected' : '' }}>استهلاكية</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small fw-bold">بحث بالاسم أو الكود أو الرئيس</label>
+                        <input type="text" name="search" class="form-control" placeholder="اسم الجمعية، الكود، رئيس الجمعية..." value="{{ request('search') }}">
+                    </div>
+                    <div class="col-12 col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-hasad-primary w-100">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> بحث
+                        </button>
+                        <a href="{{ route('associations.index') }}" class="btn btn-outline-secondary" title="إلغاء التصفية">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- جدول استعراض الجمعيات -->
@@ -183,7 +193,11 @@
                             @foreach($associations as $item)
                                 <tr>
                                     <td>
-                                        <span class="badge bg-light text-dark font-monospace border">{{ $item->code }}</span>
+                                        <span class="badge bg-light text-dark font-monospace border copyable-badge" 
+                                              onclick="copyToClipboard('{{ $item->code }}', this)" 
+                                              title="انقر لنسخ الكود">
+                                            {{ $item->code }}
+                                        </span>
                                     </td>
                                     <td>
                                         <a href="{{ route('associations.show', $item->id) }}" class="fw-bold text-dark text-decoration-none">

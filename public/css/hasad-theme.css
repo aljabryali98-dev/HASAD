@@ -808,3 +808,152 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
         display: block;
     }
 }
+
+/* ==========================================================================
+   اللمسات المؤسسية المتقدمة والتفاعلية (Advanced Enterprise Polish)
+   ========================================================================== */
+
+/* تثبيت رأس الجدول دائماً عند التمرير (Sticky Table Headers) */
+.table-hasad thead th {
+    position: sticky;
+    top: var(--hasad-header-height);
+    z-index: 5;
+    background-color: #F8FAFC !important;
+    box-shadow: 0 1px 0 var(--hasad-card-border);
+}
+
+.table-hasad tbody tr:hover td {
+    background-color: #F0FDF4 !important;
+}
+
+/* بطاقات المؤشرات الاستراتيجية الرئيسية (Executive Master KPIs) */
+.kpi-master-card {
+    background: #FFFFFF;
+    border: 1px solid var(--hasad-card-border);
+    border-radius: var(--hasad-radius-lg);
+    padding: 22px;
+    box-shadow: var(--hasad-shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: var(--hasad-transition);
+}
+
+.kpi-master-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -4px rgba(6, 95, 70, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+    border-color: var(--hasad-primary-border);
+}
+
+.kpi-master-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--hasad-primary) 0%, var(--hasad-accent) 100%);
+}
+
+/* حاوية الرسوم البيانية التفاعلية (ApexCharts Containers) */
+.chart-container-card {
+    background: #FFFFFF;
+    border: 1px solid var(--hasad-card-border);
+    border-radius: var(--hasad-radius-lg);
+    padding: 20px 24px;
+    box-shadow: var(--hasad-shadow-sm);
+    transition: var(--hasad-transition);
+}
+
+.chart-container-card:hover {
+    box-shadow: var(--hasad-shadow);
+}
+
+/* بطاقة النسخ السريع بالنقرة الواحدة (One-Click Copyable Badge) */
+.copyable-badge {
+    cursor: pointer;
+    transition: var(--hasad-transition);
+    position: relative;
+}
+
+.copyable-badge:hover {
+    filter: brightness(0.94);
+    transform: scale(1.03);
+}
+
+.copyable-badge:active {
+    transform: scale(0.97);
+}
+
+/* أزرار إجراءات الشريط العلوي */
+.btn-header-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--hasad-card-border);
+    background: #FFFFFF;
+    color: var(--hasad-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--hasad-transition);
+}
+
+.btn-header-action:hover {
+    background-color: var(--hasad-primary-light);
+    color: var(--hasad-primary);
+    border-color: var(--hasad-primary-border);
+}
+
+/* الإشعارات العائمة الفاخرة (Floating Toast Notifications) */
+.hasad-toast-container {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.hasad-toast {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 440px;
+    background: #FFFFFF;
+    border-radius: var(--hasad-radius-lg);
+    box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--hasad-card-border);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    animation: slideToastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s ease;
+}
+
+.hasad-toast-success {
+    border-right: 5px solid var(--hasad-primary);
+}
+
+.hasad-toast-danger {
+    border-right: 5px solid #DC2626;
+}
+
+.hasad-toast-info {
+    border-right: 5px solid #2563EB;
+}
+
+@keyframes slideToastIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+

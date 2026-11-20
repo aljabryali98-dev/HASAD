@@ -74,51 +74,61 @@
         </div>
     </div>
 
-    <!-- بطاقة البحث والفلترة المؤسسية -->
+    <!-- بطاقة البحث والفلترة المؤسسية (قابلة للطي) -->
     <div class="filter-card">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <i class="fa-solid fa-filter text-success"></i>
-            <h6 class="fw-bold mb-0 text-dark">تصفية وبحث في المجاميع الإنتاجية</h6>
-        </div>
-        <form method="GET" action="{{ route('productive-groups.index') }}">
-            <div class="row g-3">
-                <div class="col-12 col-md-4">
-                    <label class="form-label small fw-bold">الجمعية التعاونية التابعة لها</label>
-                    <select name="association_id" class="form-select">
-                        <option value="">-- جميع الجمعيات --</option>
-                        @foreach($associations as $ass)
-                            <option value="{{ $ass->id }}" {{ request('association_id') == $ass->id ? 'selected' : '' }}>
-                                {{ $ass->name }} ({{ $ass->code }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label small fw-bold">نوع المجموعة</label>
-                    <select name="group_type" class="form-select">
-                        <option value="">-- جميع الأنواع --</option>
-                        <option value="زراعية" {{ request('group_type') == 'زراعية' ? 'selected' : '' }}>زراعية</option>
-                        <option value="حيوانية" {{ request('group_type') == 'حيوانية' ? 'selected' : '' }}>حيوانية</option>
-                        <option value="نحلية" {{ request('group_type') == 'نحلية' ? 'selected' : '' }}>نحلية</option>
-                        <option value="سمكية" {{ request('group_type') == 'سمكية' ? 'selected' : '' }}>سمكية</option>
-                        <option value="حرفية" {{ request('group_type') == 'حرفية' ? 'selected' : '' }}>حرفية</option>
-                        <option value="صناعية" {{ request('group_type') == 'صناعية' ? 'selected' : '' }}>صناعية</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label small fw-bold">بحث بالاسم أو الكود</label>
-                    <input type="text" name="search" class="form-control" placeholder="اسم المجموعة، المنتج، المسؤول..." value="{{ request('search') }}">
-                </div>
-                <div class="col-12 col-md-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-hasad-primary w-100">
-                        <i class="fa-solid fa-magnifying-glass me-1"></i> بحث
-                    </button>
-                    <a href="{{ route('productive-groups.index') }}" class="btn btn-outline-secondary" title="إعادة التعيين">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </a>
-                </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-filter text-success"></i>
+                <h6 class="fw-bold mb-0 text-dark">تصفية وبحث في المجاميع الإنتاجية</h6>
+                @if(request()->hasAny(['association_id', 'group_type', 'search']))
+                    <span class="badge bg-success-subtle text-success border px-2 py-1 small">تصفية نشطة</span>
+                @endif
             </div>
-        </form>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filterGroupCollapse" aria-expanded="true" aria-controls="filterGroupCollapse">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="collapse show" id="filterGroupCollapse">
+            <form method="GET" action="{{ route('productive-groups.index') }}">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small fw-bold">الجمعية التعاونية التابعة لها</label>
+                        <select name="association_id" class="form-select">
+                            <option value="">-- جميع الجمعيات --</option>
+                            @foreach($associations as $ass)
+                                <option value="{{ $ass->id }}" {{ request('association_id') == $ass->id ? 'selected' : '' }}>
+                                    {{ $ass->name }} ({{ $ass->code }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small fw-bold">نوع المجموعة</label>
+                        <select name="group_type" class="form-select">
+                            <option value="">-- جميع الأنواع --</option>
+                            <option value="زراعية" {{ request('group_type') == 'زراعية' ? 'selected' : '' }}>زراعية</option>
+                            <option value="حيوانية" {{ request('group_type') == 'حيوانية' ? 'selected' : '' }}>حيوانية</option>
+                            <option value="نحلية" {{ request('group_type') == 'نحلية' ? 'selected' : '' }}>نحلية</option>
+                            <option value="سمكية" {{ request('group_type') == 'سمكية' ? 'selected' : '' }}>سمكية</option>
+                            <option value="حرفية" {{ request('group_type') == 'حرفية' ? 'selected' : '' }}>حرفية</option>
+                            <option value="صناعية" {{ request('group_type') == 'صناعية' ? 'selected' : '' }}>صناعية</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small fw-bold">بحث بالاسم أو الكود</label>
+                        <input type="text" name="search" class="form-control" placeholder="اسم المجموعة، المنتج، المسؤول..." value="{{ request('search') }}">
+                    </div>
+                    <div class="col-12 col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-hasad-primary w-100">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> بحث
+                        </button>
+                        <a href="{{ route('productive-groups.index') }}" class="btn btn-outline-secondary" title="إعادة التعيين">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- جدول استعراض المجاميع الإنتاجية -->
@@ -162,7 +172,13 @@
                         <tbody>
                             @foreach($groups as $grp)
                                 <tr>
-                                    <td><span class="badge bg-light text-dark font-monospace border">{{ $grp->code }}</span></td>
+                                    <td>
+                                        <span class="badge bg-light text-dark font-monospace border copyable-badge" 
+                                              onclick="copyToClipboard('{{ $grp->code }}', this)" 
+                                              title="انقر لنسخ الكود">
+                                            {{ $grp->code }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <a href="{{ route('productive-groups.show', $grp->id) }}" class="fw-bold text-dark text-decoration-none">
                                             {{ $grp->name }}
