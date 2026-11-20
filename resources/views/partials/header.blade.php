@@ -1,9 +1,15 @@
 <header class="app-header">
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 gap-md-3">
         <!-- زر فتح القائمة الجانبية للشاشات الصغيرة -->
-        <button type="button" class="btn-sidebar-toggle" id="sidebarToggleBtn" aria-label="تبديل القائمة">
-            <i class="fa-solid fa-bars"></i>
+        <button type="button" class="btn-sidebar-toggle d-inline-flex d-lg-none align-items-center gap-1" id="sidebarToggleBtn" aria-label="تبديل القائمة">
+            <i class="fa-solid fa-bars fs-6"></i>
+            <span class="small fw-bold">القائمة</span>
         </button>
+
+        <!-- وسم النظام للشاشات الصغيرة -->
+        <div class="d-flex d-lg-none align-items-center gap-1">
+            <span class="badge bg-success-subtle text-success border px-2 py-1 font-monospace fw-bold" style="font-size: 0.72rem;">حصاد ERP</span>
+        </div>
 
         <!-- حقل البحث السريع المؤسسي مع لوحة الأوامر الذكية -->
         <div class="header-search d-none d-md-block position-relative" onclick="openCommandPalette()" style="cursor: pointer;">
@@ -39,7 +45,7 @@
         </button>
 
         <!-- زر لوحة الأوامر الذكية (Command Palette Button) -->
-        <button type="button" class="btn-header-action" onclick="openCommandPalette()" title="لوحة الأوامر الذكية (Ctrl + K)">
+        <button type="button" class="btn-header-action d-none d-md-inline-flex" onclick="openCommandPalette()" title="لوحة الأوامر الذكية (Ctrl + K)">
             <i class="fa-solid fa-terminal"></i>
         </button>
 
@@ -49,17 +55,17 @@
         </button>
 
         <!-- زر الطباعة الرسمية (Official Print) -->
-        <button type="button" class="btn-header-action no-print" onclick="window.print()" title="طباعة رسمية A4">
+        <button type="button" class="btn-header-action d-none d-lg-inline-flex no-print" onclick="window.print()" title="طباعة رسمية A4">
             <i class="fa-solid fa-print"></i>
         </button>
 
         <!-- زر ملء الشاشة (Fullscreen Toggle) -->
-        <button type="button" class="btn-header-action" onclick="toggleFullScreen()" title="تبديل وضع ملء الشاشة">
+        <button type="button" class="btn-header-action d-none d-lg-inline-flex" onclick="toggleFullScreen()" title="تبديل وضع ملء الشاشة">
             <i class="fa-solid fa-expand"></i>
         </button>
 
         <!-- زر التحديث الفوري للبيانات (Fresh Cache Bypass) -->
-        <a href="{{ request()->fullUrlWithQuery(['fresh' => 1]) }}" class="btn-header-action" title="تحديث فوري لبيانات النظام">
+        <a href="{{ request()->fullUrlWithQuery(['fresh' => 1]) }}" class="btn-header-action d-none d-md-inline-flex" title="تحديث فوري لبيانات النظام">
             <i class="fa-solid fa-arrows-rotate"></i>
         </a>
 

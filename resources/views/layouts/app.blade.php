@@ -103,6 +103,30 @@
     <!-- التذييل (Footer) -->
     @include('partials.footer')
 
+    <!-- شريط التنقل السفلي الذكي للهواتف والشاشات الصغيرة (Mobile Bottom Nav) -->
+    <nav class="hasad-mobile-bottom-nav d-lg-none" aria-label="شريط التنقل السفلي">
+        <a href="{{ route('dashboard') }}" class="mobile-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fa-solid fa-house"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="{{ route('associations.index') }}" class="mobile-nav-item {{ request()->routeIs('associations.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>الجمعيات</span>
+        </a>
+        <a href="{{ route('personnel.index') }}" class="mobile-nav-item {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-user-graduate"></i>
+            <span>الفرسان</span>
+        </a>
+        <a href="{{ route('import.smart') }}" class="mobile-nav-item {{ request()->routeIs('import.smart*') ? 'active' : '' }}">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>استيراد</span>
+        </a>
+        <button type="button" class="mobile-nav-item mobile-nav-menu-btn" id="mobileBottomMenuBtn" aria-label="فتح القائمة الكاملة">
+            <i class="fa-solid fa-bars-staggered"></i>
+            <span>القائمة</span>
+        </button>
+    </nav>
+
     <!-- الحزم البرمجية الأساسية (JS Libraries) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -129,21 +153,54 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // التحكم بالقائمة الجانبية على الشاشات الصغيرة
-            const sidebar = document.querySelector('.app-sidebar');
+            // التحكم بالقائمة الجانبية على الشاشات الصغيرة والهواتف
+            const sidebar = document.getElementById('appSidebar') || document.querySelector('.app-sidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
             const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const closeBtn = document.getElementById('sidebarCloseBtn');
+            const bottomMenuBtn = document.getElementById('mobileBottomMenuBtn');
 
-            if (toggleBtn && sidebar && backdrop) {
-                toggleBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('sidebar-open');
-                    backdrop.classList.toggle('active');
+            function openSidebar() {
+                if (sidebar) sidebar.classList.add('sidebar-open');
+                if (backdrop) backdrop.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                if (sidebar) sidebar.classList.remove('sidebar-open');
+                if (backdrop) backdrop.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+            if (bottomMenuBtn) bottomMenuBtn.addEventListener('click', openSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+            // إغلاق القائمة تلقائياً عند النقر على أي رابط تنقل
+            if (sidebar) {
+                sidebar.querySelectorAll('.side-menu__item, .side-menu__sub-item').forEach(function(link) {
+                    if (!link.hasAttribute('data-bs-toggle') && link.getAttribute('href') !== 'javascript:void(0)') {
+                        link.addEventListener('click', function() {
+                            if (window.innerWidth < 992) {
+                                closeSidebar();
+                            }
+                        });
+                    }
                 });
 
-                backdrop.addEventListener('click', function() {
-                    sidebar.classList.remove('sidebar-open');
-                    backdrop.classList.remove('active');
-                });
+                // دعم السحب لليمين لإغلاق القائمة على شاشات اللمس (Touch Swipe to Close)
+                let touchStartX = 0;
+                sidebar.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].clientX;
+                }, { passive: true });
+
+                sidebar.addEventListener('touchend', function(e) {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    if (touchEndX - touchStartX > 50) {
+                        closeSidebar();
+                    }
+                }, { passive: true });
             }
 
             // تفعيل البحث اللحظي الخفيف مع Debounce لحقول البحث

@@ -1,5 +1,5 @@
-<aside class="app-sidebar">
-    <!-- الشعار والهوية المؤسسية السيادية -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- الشعار والهوية المؤسسية السيادية مع زر إغلاق للشاشات الصغيرة -->
     <div class="sidebar-brand-wrapper">
         <a href="{{ route('dashboard') }}" class="sidebar-brand text-decoration-none">
             <div class="sidebar-brand-icon">
@@ -13,6 +13,33 @@
                 <span>الجمهورية اليمنية - اللجنة الزراعية العليا</span>
             </div>
         </a>
+        <!-- زر إغلاق القائمة للشاشات الصغيرة والهواتف -->
+        <button type="button" class="btn-sidebar-close d-lg-none" id="sidebarCloseBtn" aria-label="إغلاق القائمة">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- بطاقة المستخدم السريعة في القائمة للشاشات الصغيرة -->
+    <div class="sidebar-mobile-user-card d-lg-none px-3 py-2 border-bottom" style="background: rgba(16, 185, 129, 0.04);">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-circle" style="width: 34px; height: 34px; font-size: 0.82rem;">
+                    {{ mb_substr(auth()->user()->name ?? 'م', 0, 1) }}
+                </div>
+                <div>
+                    <span class="d-block fw-bold text-dark small" style="font-size: 0.8rem;">{{ auth()->user()->name ?? 'المستخدم' }}</span>
+                    <span class="badge bg-success-subtle text-success border px-1 py-0 font-monospace" style="font-size: 0.62rem;">
+                        {{ auth()->user()->role === 'admin' ? 'مدير النظام' : 'مستخدم مصرح' }}
+                    </span>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('logout') }}" class="m-0">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" title="تسجيل الخروج" style="font-size: 0.72rem;">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> خروج
+                </button>
+            </form>
+        </div>
     </div>
     
     <!-- قائمة الروابط المصنفة -->

@@ -630,21 +630,47 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 /* زر القائمة للشاشات الصغيرة */
 .btn-sidebar-toggle {
     display: none;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.85);
     border: 1px solid var(--hasad-card-border);
-    border-radius: var(--hasad-radius-sm);
-    color: var(--hasad-text-body);
-    width: 36px;
-    height: 36px;
+    border-radius: var(--hasad-radius);
+    color: var(--hasad-primary);
+    min-height: 38px;
+    padding: 6px 12px;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 0.88rem;
+    font-weight: 700;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(6, 78, 59, 0.08);
+    transition: var(--hasad-transition);
 }
 
-.btn-sidebar-toggle:hover {
-    background-color: var(--hasad-bg);
+.btn-sidebar-toggle:hover,
+.btn-sidebar-toggle:active {
+    background-color: var(--hasad-primary-light);
+    border-color: var(--hasad-primary-border);
     color: var(--hasad-primary);
+    transform: scale(0.97);
+}
+
+/* زر إغلاق القائمة في الشاشات الصغيرة */
+.btn-sidebar-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #DC2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-sidebar-close:hover {
+    background: rgba(239, 68, 68, 0.18);
+    transform: scale(1.05);
 }
 
 /* بطاقة المستخدم في الشريط العلوي */
@@ -1104,40 +1130,218 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 /* ==========================================================================
-   التجاوب على الشاشات المختلفة (Responsive Layout)
+   التجاوب الشامل على الهواتف والشاشات المختلفة (Universal Responsive Layout)
    ========================================================================== */
 @media (max-width: 991.98px) {
+    /* القائمة الجانبية كـ درج منزلق فائق السلاسة (Drawer) */
     .app-sidebar {
-        transform: translateX(100%);
+        width: 320px !important;
+        max-width: 88vw !important;
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #FFFFFF !important;
+        border-radius: 0 !important;
+        border-left: 1px solid var(--hasad-card-border) !important;
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.25) !important;
+        z-index: 1060 !important;
+        transform: translateX(110%) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s !important;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    [data-theme-mode="dark"] .app-sidebar {
+        background: #111B21 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
     }
 
     .app-sidebar.sidebar-open {
-        transform: translateX(0);
-    }
-
-    .app-header, .main-content, .app-footer {
-        margin-right: 0 !important;
-        right: 0 !important;
-    }
-
-    .btn-sidebar-toggle {
-        display: inline-flex;
+        transform: translateX(0) !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
 
     .sidebar-backdrop {
-        position: fixed;
-        top: 0;
-        right: 0;
-        left: 0;
-        bottom: 0;
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(4px);
-        z-index: 1019;
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        background: rgba(15, 23, 42, 0.5) !important;
+        backdrop-filter: blur(5px) !important;
+        -webkit-backdrop-filter: blur(5px) !important;
+        z-index: 1055 !important;
         display: none;
+        opacity: 0;
+        transition: opacity 0.25s ease !important;
     }
 
     .sidebar-backdrop.active {
-        display: block;
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    /* الشريط العلوي والمحتوى والتذييل في الشاشات الصغيرة */
+    .app-header {
+        margin-right: 0 !important;
+        right: 0 !important;
+        padding: 0 14px !important;
+        height: 58px !important;
+    }
+
+    .main-content {
+        margin-right: 0 !important;
+        right: 0 !important;
+        padding: 16px 14px calc(80px + env(safe-area-inset-bottom, 0px)) 14px !important;
+        min-height: calc(100vh - var(--hasad-header-height));
+    }
+
+    .app-footer {
+        margin-right: 0 !important;
+        right: 0 !important;
+        padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    .btn-sidebar-toggle {
+        display: inline-flex !important;
+    }
+}
+
+/* ==========================================================================
+   شريط التنقل السفلي الذكي للهواتف (Mobile Bottom Navigation Bar)
+   ========================================================================== */
+.hasad-mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border-top: 1px solid var(--hasad-card-border);
+    box-shadow: 0 -4px 20px rgba(6, 78, 59, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1040;
+    transition: var(--hasad-transition);
+}
+
+[data-theme-mode="dark"] .hasad-mobile-bottom-nav {
+    background: rgba(17, 27, 33, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--hasad-text-muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    padding: 6px 0;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+}
+
+.mobile-nav-item i {
+    font-size: 1.15rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-item.active,
+.mobile-nav-item:hover {
+    color: var(--hasad-primary);
+}
+
+.mobile-nav-item.active i {
+    transform: translateY(-2px);
+    color: var(--hasad-accent);
+}
+
+.mobile-nav-item.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    width: 16px;
+    height: 3px;
+    background: var(--hasad-accent);
+    border-radius: 999px;
+}
+
+.mobile-nav-menu-btn {
+    color: var(--hasad-primary);
+}
+
+.mobile-nav-menu-btn i {
+    color: var(--hasad-accent);
+}
+
+/* ==========================================================================
+   تحسينات التجاوب للشاشات الصغيرة جداً والهواتف (< 768px)
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    /* الأرقام الإحصائية لا تنكسر ولا تقطع */
+    .stat-num {
+        font-size: clamp(1.2rem, 4.5vw, 1.55rem) !important;
+        letter-spacing: -0.5px;
+    }
+
+    .kpi-master-card, .kpi-card {
+        padding: 16px 14px !important;
+    }
+
+    .action-card {
+        padding: 14px 12px !important;
+    }
+
+    .action-icon {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 1rem !important;
+        margin-bottom: 10px !important;
+    }
+
+    .table-hasad th, .table-hasad td {
+        padding: 10px 12px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .card-hasad .card-header {
+        padding: 12px 14px !important;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-card {
+        padding: 16px 14px !important;
+    }
+
+    /* ضمان سلاسة جداول البيانات باللمس */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto;
+    }
+
+    /* بطاقات المقارنة والنوافذ المنبثقة */
+    .modal-dialog {
+        margin: 10px !important;
+        max-width: calc(100vw - 20px) !important;
     }
 }
 

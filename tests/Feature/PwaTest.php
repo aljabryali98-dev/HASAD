@@ -94,4 +94,16 @@ class PwaTest extends TestCase
         $response->assertSee('hasadPwaInstallModal');
         $response->assertSee('btnInstallAppHeader');
     }
+
+    public function test_mobile_responsiveness_and_navigation_drawer_are_configured()
+    {
+        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('hasad-mobile-bottom-nav');
+        $response->assertSee('mobileBottomMenuBtn');
+        $response->assertSee('sidebarToggleBtn');
+        $response->assertSee('sidebarCloseBtn');
+        $response->assertSee('appSidebar');
+        $response->assertSee('sidebar-mobile-user-card');
+    }
 }
