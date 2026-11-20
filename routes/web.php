@@ -100,73 +100,73 @@ Route::middleware('auth')->group(function () {
     // =========================================================================
     // 1. القسم الأول: الجمعيات التعاونية (Cooperative Associations Module)
     // =========================================================================
-    Route::middleware('permission:associations.view')->group(function () {
-        Route::get('associations', [AssociationController::class, 'index'])->name('associations.index');
-        Route::get('associations/{association}', [AssociationController::class, 'show'])->name('associations.show');
-    });
-
     Route::middleware('permission:associations.create')->group(function () {
         Route::get('associations/create', [AssociationController::class, 'create'])->name('associations.create');
         Route::post('associations', [AssociationController::class, 'store'])->name('associations.store');
     });
 
+    Route::middleware('permission:associations.view')->group(function () {
+        Route::get('associations', [AssociationController::class, 'index'])->name('associations.index');
+        Route::get('associations/{association}', [AssociationController::class, 'show'])->name('associations.show')->whereNumber('association');
+    });
+
     Route::middleware('permission:associations.edit')->group(function () {
-        Route::get('associations/{association}/edit', [AssociationController::class, 'edit'])->name('associations.edit');
-        Route::put('associations/{association}', [AssociationController::class, 'update'])->name('associations.update');
-        Route::patch('associations/{association}', [AssociationController::class, 'update']);
-        Route::post('associations/{association}/board-members', [AssociationController::class, 'storeBoardMember'])->name('associations.board_members.store');
-        Route::post('associations/{association}/loans', [AssociationController::class, 'storeLoan'])->name('associations.loans.store');
+        Route::get('associations/{association}/edit', [AssociationController::class, 'edit'])->name('associations.edit')->whereNumber('association');
+        Route::put('associations/{association}', [AssociationController::class, 'update'])->name('associations.update')->whereNumber('association');
+        Route::patch('associations/{association}', [AssociationController::class, 'update'])->whereNumber('association');
+        Route::post('associations/{association}/board-members', [AssociationController::class, 'storeBoardMember'])->name('associations.board_members.store')->whereNumber('association');
+        Route::post('associations/{association}/loans', [AssociationController::class, 'storeLoan'])->name('associations.loans.store')->whereNumber('association');
     });
 
     Route::middleware('permission:associations.delete')->group(function () {
-        Route::delete('associations/{association}', [AssociationController::class, 'destroy'])->name('associations.destroy');
+        Route::delete('associations/{association}', [AssociationController::class, 'destroy'])->name('associations.destroy')->whereNumber('association');
     });
 
     // =========================================================================
     // 2. القسم الثاني: المجاميع الإنتاجية (Productive Groups Module)
     // =========================================================================
-    Route::middleware('permission:productive_groups.view')->group(function () {
-        Route::get('productive-groups', [ProductiveGroupController::class, 'index'])->name('productive-groups.index');
-        Route::get('productive-groups/{productive_group}', [ProductiveGroupController::class, 'show'])->name('productive-groups.show');
-    });
-
     Route::middleware('permission:productive_groups.create')->group(function () {
         Route::get('productive-groups/create', [ProductiveGroupController::class, 'create'])->name('productive-groups.create');
         Route::post('productive-groups', [ProductiveGroupController::class, 'store'])->name('productive-groups.store');
     });
 
+    Route::middleware('permission:productive_groups.view')->group(function () {
+        Route::get('productive-groups', [ProductiveGroupController::class, 'index'])->name('productive-groups.index');
+        Route::get('productive-groups/{productive_group}', [ProductiveGroupController::class, 'show'])->name('productive-groups.show')->whereNumber('productive_group');
+    });
+
     Route::middleware('permission:productive_groups.edit')->group(function () {
-        Route::get('productive-groups/{productive_group}/edit', [ProductiveGroupController::class, 'edit'])->name('productive-groups.edit');
-        Route::put('productive-groups/{productive_group}', [ProductiveGroupController::class, 'update'])->name('productive-groups.update');
-        Route::patch('productive-groups/{productive_group}', [ProductiveGroupController::class, 'update']);
-        Route::post('productive-groups/{productive_group}/attach-facilitator', [ProductiveGroupController::class, 'attachFacilitator'])->name('productive-groups.attach_facilitator');
+        Route::get('productive-groups/{productive_group}/edit', [ProductiveGroupController::class, 'edit'])->name('productive-groups.edit')->whereNumber('productive_group');
+        Route::put('productive-groups/{productive_group}', [ProductiveGroupController::class, 'update'])->name('productive-groups.update')->whereNumber('productive_group');
+        Route::patch('productive-groups/{productive_group}', [ProductiveGroupController::class, 'update'])->whereNumber('productive_group');
+        Route::post('productive-groups/{productive_group}/attach-facilitator', [ProductiveGroupController::class, 'attachFacilitator'])->name('productive-groups.attach_facilitator')->whereNumber('productive_group');
     });
 
     Route::middleware('permission:productive_groups.delete')->group(function () {
-        Route::delete('productive-groups/{productive_group}', [ProductiveGroupController::class, 'destroy'])->name('productive-groups.destroy');
+        Route::delete('productive-groups/{productive_group}', [ProductiveGroupController::class, 'destroy'])->name('productive-groups.destroy')->whereNumber('productive_group');
     });
 
     // =========================================================================
     // 3. القسم الثالث - المحور (أ): الكوادر والفرسان والتدريب
     // =========================================================================
-    Route::middleware('permission:personnel.view')->group(function () {
-        Route::get('personnel', [UnifiedPersonnelController::class, 'index'])->name('personnel.index');
-        Route::get('personnel/{personnel}', [UnifiedPersonnelController::class, 'show'])->name('personnel.show');
-    });
-
     Route::middleware('permission:personnel.create')->group(function () {
         Route::get('personnel/create', [UnifiedPersonnelController::class, 'create'])->name('personnel.create');
         Route::post('personnel', [UnifiedPersonnelController::class, 'store'])->name('personnel.store');
     });
 
+    Route::middleware('permission:personnel.view')->group(function () {
+        Route::get('personnel', [UnifiedPersonnelController::class, 'index'])->name('personnel.index');
+        Route::get('personnel/{personnel}', [UnifiedPersonnelController::class, 'show'])->name('personnel.show')->whereNumber('personnel');
+    });
+
     Route::middleware('permission:personnel.edit')->group(function () {
-        Route::get('personnel/{personnel}/edit', [UnifiedPersonnelController::class, 'edit'])->name('personnel.edit');
-        Route::put('personnel/{personnel}', [UnifiedPersonnelController::class, 'update'])->name('personnel.update');
-        Route::patch('personnel/{personnel}', [UnifiedPersonnelController::class, 'update']);
+        Route::get('personnel/{personnel}/edit', [UnifiedPersonnelController::class, 'edit'])->name('personnel.edit')->whereNumber('personnel');
+        Route::put('personnel/{personnel}', [UnifiedPersonnelController::class, 'update'])->name('personnel.update')->whereNumber('personnel');
+        Route::patch('personnel/{personnel}', [UnifiedPersonnelController::class, 'update'])->whereNumber('personnel');
     });
 
     Route::middleware('permission:personnel.delete')->group(function () {
-        Route::delete('personnel/{personnel}', [UnifiedPersonnelController::class, 'destroy'])->name('personnel.destroy');
+        Route::delete('personnel/{personnel}', [UnifiedPersonnelController::class, 'destroy'])->name('personnel.destroy')->whereNumber('personnel');
     });
 
     // =========================================================================
