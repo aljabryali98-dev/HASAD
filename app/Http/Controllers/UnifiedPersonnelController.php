@@ -97,6 +97,30 @@ class UnifiedPersonnelController extends Controller
     }
 
     /**
+     * توجيه نموذج إضافة كادر جديد
+     */
+    public function create()
+    {
+        return redirect()->route('personnel.index', ['open_create' => 1]);
+    }
+
+    /**
+     * عرض تفاصيل كادر محدد
+     */
+    public function show(int $id)
+    {
+        return redirect()->route('personnel.index', ['search' => $id]);
+    }
+
+    /**
+     * تعديل بيانات كادر
+     */
+    public function edit(int $id)
+    {
+        return redirect()->route('personnel.index', ['edit_id' => $id]);
+    }
+
+    /**
      * حفظ كادر أو فارس جديد
      */
     public function store(Request $request)

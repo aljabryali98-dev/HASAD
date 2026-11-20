@@ -81,6 +81,14 @@ class ProductiveGroupController extends Controller
     }
 
     /**
+     * توجيه نموذج إضافة مجموعة إنتاجية جديدة
+     */
+    public function create()
+    {
+        return redirect()->route('productive-groups.index', ['open_create' => 1]);
+    }
+
+    /**
      * حفظ مجموعة إنتاجية جديدة
      */
     public function store(Request $request)
@@ -150,6 +158,14 @@ class ProductiveGroupController extends Controller
         $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get();
 
         return view('productive_groups.show', compact('group', 'facilitators'));
+    }
+
+    /**
+     * تعديل بيانات المجموعة الإنتاجية
+     */
+    public function edit(int $id)
+    {
+        return redirect()->route('productive-groups.show', $id);
     }
 
     /**

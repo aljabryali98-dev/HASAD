@@ -7,6 +7,7 @@ use App\Http\Controllers\GeneralDatabaseController;
 use App\Http\Controllers\GeoExplorerController;
 use App\Http\Controllers\GeographyController;
 use App\Http\Controllers\ProductiveGroupController;
+use App\Http\Controllers\SmartImportController;
 use App\Http\Controllers\UnifiedPersonnelController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -161,5 +162,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/districts/{governorate}', [GeographyController::class, 'getDistricts'])->name('districts');
         Route::get('/sub-districts/{district}', [GeographyController::class, 'getSubDistricts'])->name('sub_districts');
         Route::get('/villages/{sub_district}', [GeographyController::class, 'getVillages'])->name('villages');
+    });
+
+    // =========================================================================
+    // 6. مركز الاستيراد الذكي الشامل من ملفات الإكسل (Smart Excel Import Hub)
+    // =========================================================================
+    Route::prefix('import/smart')->name('import.smart')->group(function () {
+        Route::get('/', [SmartImportController::class, 'index']);
+        Route::post('/upload', [SmartImportController::class, 'upload'])->name('.upload');
+        Route::post('/master', [SmartImportController::class, 'runMaster'])->name('.master');
     });
 });

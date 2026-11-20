@@ -152,6 +152,17 @@
                     <span>إدارة النطاق والقرى والجمعيات</span>
                 </a>
             </li>
+
+            <li class="side-menu__category">أدوات النظام والمعالجة الذكية</li>
+
+            <!-- الاستيراد الذكي الشامل من ملفات الإكسل -->
+            <li>
+                <a href="{{ route('import.smart') }}" class="side-menu__item {{ request()->routeIs('import.smart*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-file-excel text-success" data-lucide="file-spreadsheet"></i>
+                    <span>الاستيراد الذكي الشامل (Excel)</span>
+                    <span class="badge bg-emerald-500/10 text-success border border-emerald-500/20 ms-auto font-monospace" style="font-size: 0.65rem;">شامل</span>
+                </a>
+            </li>
         </ul>
     </div>
 </aside>

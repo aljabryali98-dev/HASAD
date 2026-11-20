@@ -28,6 +28,11 @@
             <span class="font-monospace fw-semibold">{{ date('Y-m-d') }}</span>
         </div>
 
+        <!-- زر الاستيراد الذكي الشامل (Smart Excel Import) -->
+        <a href="{{ route('import.smart') }}" class="btn-header-action" title="الاستيراد الذكي الشامل من ملفات الإكسل">
+            <i class="fa-solid fa-file-excel text-success"></i>
+        </a>
+
         <!-- زر لوحة الأوامر الذكية (Command Palette Button) -->
         <button type="button" class="btn-header-action" onclick="openCommandPalette()" title="لوحة الأوامر الذكية (Ctrl + K)">
             <i class="fa-solid fa-terminal"></i>

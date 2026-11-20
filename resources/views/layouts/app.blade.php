@@ -324,6 +324,7 @@
             { title: 'محفظة القروض البيضاء (0% فوائد)', category: 'التمويل', icon: 'fa-hand-holding-dollar', url: '{{ route('general.loans.index') }}' },
             { title: 'المستكشف الجغرافي الشامل', category: 'الجغرافيا', icon: 'fa-earth-asia', url: '{{ route('geo-explorer.index') }}' },
             { title: 'إدارة النطاق الجغرافي والقرى', category: 'الجغرافيا', icon: 'fa-network-wired', url: '{{ route('geography.manage') }}' },
+            { title: 'الاستيراد الذكي الشامل من ملفات الإكسل (Smart Excel Import)', category: 'الأدوات', icon: 'fa-file-excel', url: '{{ route('import.smart') }}' },
             { title: 'مشاريع الجمعيات التنموية', category: 'المشاريع', icon: 'fa-diagram-project', url: '{{ route('general.projects.index') }}' },
             { title: 'سجل المزارعين والحيازات الزراعية', category: 'الزراعة', icon: 'fa-tractor', url: '{{ route('general.farmers.index') }}' },
             { title: 'المشاتل الزراعية المعتمدة', category: 'الزراعة', icon: 'fa-tree', url: '{{ route('general.nurseries.index') }}' },

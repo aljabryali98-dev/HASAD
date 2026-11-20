@@ -182,10 +182,7 @@
                     <i class="fa-solid fa-seedling" data-lucide="sprout"></i>
                 </div>
                 <h4 class="fw-bold mb-1 text-dark">نظام حصاد</h4>
-                <p class="text-muted small mb-1">المنظومة الوطنية للرصد والتقييم والتحليل التعاوني</p>
-                <div class="badge bg-light text-success border px-2 py-1 small">
-                    <i class="fa-solid fa-building-flag me-1"></i> الجمهورية اليمنية - اللجنة الزراعية العليا
-                </div>
+                <p class="text-muted small mb-0">المنظومة الوطنية للرصد والتقييم والتحليل التعاوني</p>
             </div>
 
             <!-- رسائل التنبيه والأخطاء -->
@@ -229,17 +226,14 @@
                     </div>
                 </div>
 
-                <!-- تذكرني ومساعد تسجيل الدخول السريع -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <!-- تذكر تسجيل دخولي -->
+                <div class="mb-4">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                         <label class="form-check-label small text-muted" for="remember">
                             تذكر تسجيل دخولي
                         </label>
                     </div>
-                    <button type="button" class="btn btn-link p-0 text-decoration-none small text-success fw-semibold" id="btnFillDemo">
-                        <i class="fa-solid fa-key me-1"></i> تعبئة تجريبية
-                    </button>
                 </div>
 
                 <!-- زر الإرسال -->
@@ -280,18 +274,6 @@
             });
         }
 
-        // زر التعبئة التجريبية السريعة
-        const fillDemoBtn = document.getElementById('btnFillDemo');
-        if (fillDemoBtn) {
-            fillDemoBtn.addEventListener('click', function() {
-                const emailInput = document.getElementById('email');
-                if (emailInput && passwordInput) {
-                    emailInput.value = 'admin@hasad.local';
-                    passwordInput.value = 'password';
-                    passwordInput.focus();
-                }
-            });
-        }
 
         // تفعيل أيقونات Lucide
         if (typeof lucide !== 'undefined' && lucide.createIcons) {

@@ -102,30 +102,24 @@ class DashboardController extends Controller
             ];
         });
 
-        // 2. آخر السجلات المضافة (مخزنة مؤقتاً لمدة دقيقة واحدة)
-        $recentData = Cache::remember('dashboard_recent', 60, function () {
-            return [
-                'recentAssociations' => Association::select(['id', 'code', 'name', 'status', 'governorate_id', 'directorate_id', 'created_at'])
-                    ->with(['governorate:id,name_ar,name', 'directorate:id,name_ar,name'])
-                    ->latest('id')
-                    ->take(5)
-                    ->get(),
-                'recentGroups' => ProductiveGroup::select(['id', 'code', 'name', 'total_members', 'status', 'association_id', 'created_at'])
-                    ->with(['association:id,name'])
-                    ->latest('id')
-                    ->take(5)
-                    ->get(),
-                'recentProjects' => AssociationProject::select(['id', 'project_name', 'cost', 'execution_status', 'association_id', 'created_at'])
-                    ->with(['association:id,name'])
-                    ->latest('id')
-                    ->take(5)
-                    ->get(),
-            ];
-        });
+        // 2. آخر السجلات المضافة (استعلام مباشر فائق السرعة عبر الفهارس لتفادي أخطاء التسلسل في الكاش)
+        $recentAssociations = Association::select(['id', 'code', 'name', 'status', 'governorate_id', 'directorate_id', 'created_at'])
+            ->with(['governorate:id,name_ar,name', 'directorate:id,name_ar,name'])
+            ->latest('id')
+            ->take(5)
+            ->get();
 
-        $recentAssociations = $recentData['recentAssociations'];
-        $recentGroups = $recentData['recentGroups'];
-        $recentProjects = $recentData['recentProjects'];
+        $recentGroups = ProductiveGroup::select(['id', 'code', 'name', 'total_members', 'status', 'association_id', 'created_at'])
+            ->with(['association:id,name'])
+            ->latest('id')
+            ->take(5)
+            ->get();
+
+        $recentProjects = AssociationProject::select(['id', 'project_name', 'cost', 'execution_status', 'association_id', 'created_at'])
+            ->with(['association:id,name'])
+            ->latest('id')
+            ->take(5)
+            ->get();
 
         return view('dashboard', compact('kpis', 'recentAssociations', 'recentGroups', 'recentProjects'));
     }

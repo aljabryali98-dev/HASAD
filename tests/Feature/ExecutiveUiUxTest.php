@@ -56,7 +56,7 @@ class ExecutiveUiUxTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('تسجيل الدخول - نظام حصاد المركزي');
         $response->assertSee('btnTogglePassword');
-        $response->assertSee('btnFillDemo');
+        $response->assertDontSee('btnFillDemo');
         $response->assertSee('256-Bit TLS');
     }
 
