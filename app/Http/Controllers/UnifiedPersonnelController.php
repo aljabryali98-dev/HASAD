@@ -20,7 +20,9 @@ class UnifiedPersonnelController extends Controller
      */
     public function index(Request $request): View
     {
-        $category = $request->query('category', 'فرسان الجمعية');
+        $category = $request->has('category') 
+            ? $request->query('category') 
+            : ($request->filled('association_id') ? null : 'فرسان الجمعية');
         $subSpecialty = $request->query('sub_specialty');
 
         $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
@@ -83,6 +85,7 @@ class UnifiedPersonnelController extends Controller
 
         $categories = UnifiedPersonnel::CATEGORIES;
         $knightsTypes = UnifiedPersonnel::KNIGHTS_TYPES;
+        $selectedAssociation = $request->filled('association_id') ? Association::find($request->association_id) : null;
 
         return view('personnel.index', compact(
             'personnel',
@@ -90,6 +93,7 @@ class UnifiedPersonnelController extends Controller
             'subSpecialty',
             'governorates',
             'associations',
+            'selectedAssociation',
             'stats',
             'categories',
             'knightsTypes'

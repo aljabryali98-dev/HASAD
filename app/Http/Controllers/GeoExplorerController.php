@@ -48,14 +48,15 @@ class GeoExplorerController extends Controller
         // تجميع السجلات المرتبطة بالنطاق مع تقييد الحقول لتسريع الاستجابة
         $associations = $applyGeoFilter(Association::query())
             ->with(['directorate:id,name_ar,name', 'uzlah:id,name_ar,name'])
-            ->get(['id', 'code', 'name', 'status', 'governorate_id', 'directorate_id', 'uzlah_id']);
+            ->get(['id', 'code', 'name', 'type', 'status', 'president_name', 'total_members', 'governorate_id', 'directorate_id', 'uzlah_id']);
 
         $productiveGroups = $applyGeoFilter(ProductiveGroup::query())
             ->with(['association:id,name'])
             ->get(['id', 'code', 'name', 'status', 'total_members', 'productive_area', 'governorate_id', 'directorate_id', 'uzlah_id', 'association_id']);
 
         $personnel = $applyGeoFilter(UnifiedPersonnel::query())
-            ->get(['id', 'code', 'full_name', 'category', 'is_activated_in_field', 'governorate_id', 'directorate_id', 'uzlah_id']);
+            ->with(['association:id,name', 'uzlah:id,name_ar'])
+            ->get(['id', 'code', 'full_name', 'category', 'sub_specialty', 'phone', 'is_activated_in_field', 'governorate_id', 'directorate_id', 'uzlah_id', 'association_id']);
 
         $projects = $applyGeoFilter(AssociationProject::query())
             ->get(['id', 'project_name', 'execution_status', 'cost', 'governorate_id', 'directorate_id', 'uzlah_id']);
@@ -84,6 +85,7 @@ class GeoExplorerController extends Controller
             'initiatives_count' => $initiatives->count(),
             'crops_count' => $crops->count(),
             'farmers_count' => $farmers->count(),
+            'nurseries_count' => $nurseries->count(),
             'total_cultivated_area' => $farmers->sum('cultivated_area'),
             'loans_count' => $loans->count(),
             'total_loans_amount' => $loans->sum('loan_amount'),
@@ -104,6 +106,75 @@ class GeoExplorerController extends Controller
             'initiatives',
             'crops',
             'farmers',
+            'nurseries',
+            'loans',
+            'stats'
+        ));
+    }
+
+    /**
+     * طباعة التقرير والكشف الرسمي للنطاق الجغرافي الشامل
+     */
+    public function printDossier(Request $request): View
+    {
+        $selectedGovId = $request->query('gov_id') ?? $request->query('governorate_id', 2);
+        $selectedDirId = $request->query('dir_id') ?? $request->query('directorate_id');
+        $selectedUzlId = $request->query('uzl_id') ?? $request->query('uzlah_id');
+
+        $currentGov = Governorate::find($selectedGovId, ['id', 'code', 'name_ar', 'name']);
+        $currentDir = $selectedDirId ? Directorate::find($selectedDirId, ['id', 'code', 'name_ar', 'name', 'governorate_id']) : null;
+        $currentUzl = $selectedUzlId ? Uzlah::find($selectedUzlId, ['id', 'code', 'name_ar', 'name', 'directorate_id', 'governorate_id']) : null;
+
+        $applyGeoFilter = function ($query) use ($selectedGovId, $selectedDirId, $selectedUzlId) {
+            if ($selectedGovId) $query->where('governorate_id', $selectedGovId);
+            if ($selectedDirId) $query->where('directorate_id', $selectedDirId);
+            if ($selectedUzlId) $query->where('uzlah_id', $selectedUzlId);
+            return $query;
+        };
+
+        $associations = $applyGeoFilter(Association::query())
+            ->with(['directorate:id,name_ar', 'uzlah:id,name_ar'])
+            ->get(['id', 'code', 'name', 'type', 'status', 'president_name', 'total_members']);
+
+        $productiveGroups = $applyGeoFilter(ProductiveGroup::query())
+            ->get(['id', 'code', 'name', 'total_members']);
+
+        $personnel = $applyGeoFilter(UnifiedPersonnel::query())
+            ->with(['association:id,name'])
+            ->get(['id', 'code', 'full_name', 'category', 'sub_specialty', 'phone', 'is_activated_in_field', 'association_id']);
+
+        $projects = $applyGeoFilter(AssociationProject::query())
+            ->get(['id', 'project_name', 'cost', 'execution_status']);
+
+        $initiatives = $applyGeoFilter(CommunityInitiative::query())
+            ->get(['id', 'initiative_name', 'cost', 'beneficiaries_count']);
+
+        $loans = $selectedDirId
+            ? AssociationLoan::where('directorate_id', $selectedDirId)->get(['id', 'code', 'loan_amount'])
+            : ($selectedGovId ? AssociationLoan::where('governorate_id', $selectedGovId)->get(['id', 'code', 'loan_amount']) : collect());
+
+        $stats = [
+            'associations_count' => $associations->count(),
+            'productive_groups_count' => $productiveGroups->count(),
+            'personnel_count' => $personnel->count(),
+            'projects_count' => $projects->count(),
+            'initiatives_count' => $initiatives->count(),
+            'farmers_count' => FarmerAndLand::when($selectedGovId, fn($q) => $q->where('governorate_id', $selectedGovId))->count(),
+            'loans_count' => $loans->count(),
+        ];
+
+        return view('geo_explorer.print', compact(
+            'currentGov',
+            'currentDir',
+            'currentUzl',
+            'selectedGovId',
+            'selectedDirId',
+            'selectedUzlId',
+            'associations',
+            'productiveGroups',
+            'personnel',
+            'projects',
+            'initiatives',
             'loans',
             'stats'
         ));

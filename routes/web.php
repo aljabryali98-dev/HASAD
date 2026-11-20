@@ -97,6 +97,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    // مساعد حصاد الذكي المدمج (Hasad AI Copilot API)
+    Route::post('/api/copilot/query', [\App\Http\Controllers\Api\CopilotApiController::class, 'query'])->name('api.copilot.query');
+
     // =========================================================================
     // 1. القسم الأول: الجمعيات التعاونية (Cooperative Associations Module)
     // =========================================================================
@@ -108,6 +111,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:associations.view')->group(function () {
         Route::get('associations', [AssociationController::class, 'index'])->name('associations.index');
         Route::get('associations/{association}', [AssociationController::class, 'show'])->name('associations.show')->whereNumber('association');
+        Route::get('associations/{association}/print', [AssociationController::class, 'printDossier'])->name('associations.print')->whereNumber('association');
+        Route::get('associations/{association}/shareholders/{shareholder}/receipt', [AssociationController::class, 'printShareholderReceipt'])->name('associations.shareholders.receipt')->whereNumber('association');
     });
 
     Route::middleware('permission:associations.edit')->group(function () {
@@ -116,6 +121,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('associations/{association}', [AssociationController::class, 'update'])->whereNumber('association');
         Route::post('associations/{association}/board-members', [AssociationController::class, 'storeBoardMember'])->name('associations.board_members.store')->whereNumber('association');
         Route::post('associations/{association}/loans', [AssociationController::class, 'storeLoan'])->name('associations.loans.store')->whereNumber('association');
+        Route::post('associations/{association}/shareholders', [AssociationController::class, 'storeShareholder'])->name('associations.shareholders.store')->whereNumber('association');
+        Route::post('associations/{association}/personnel', [AssociationController::class, 'storePersonnel'])->name('associations.personnel.store')->whereNumber('association');
     });
 
     Route::middleware('permission:associations.delete')->group(function () {
@@ -196,6 +203,7 @@ Route::middleware('auth')->group(function () {
     // =========================================================================
     // 4. مستكشف النطاق الجغرافي الشامل (360° Geo-Explorer)
     // =========================================================================
+    Route::get('/geo-explorer/print', [GeoExplorerController::class, 'printDossier'])->name('geo-explorer.print')->middleware('permission:geography.view');
     Route::get('/geo-explorer', [GeoExplorerController::class, 'index'])->name('geo-explorer.index')->middleware('permission:geography.view');
 
     // =========================================================================

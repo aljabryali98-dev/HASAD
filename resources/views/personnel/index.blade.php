@@ -45,6 +45,29 @@
         </div>
     @endif
 
+    @if(isset($selectedAssociation) && $selectedAssociation)
+        <div class="alert bg-white border border-success border-opacity-50 shadow-sm rounded-4 p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-success text-white p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                    <i class="fa-solid fa-building-columns fs-5"></i>
+                </div>
+                <div>
+                    <span class="badge bg-success bg-opacity-25 text-success small mb-1">تصفية بحسب الجمعية التعاونية</span>
+                    <h5 class="fw-bold mb-0 text-dark">كشف فرسان وكوادر: {{ $selectedAssociation->name }} ({{ $personnel->total() }} كادر)</h5>
+                    <small class="text-muted">{{ $selectedAssociation->governorate?->name_ar }} - مديرية {{ $selectedAssociation->directorate?->name_ar }}</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('associations.show', $selectedAssociation->id) }}" class="btn btn-sm btn-outline-dark">
+                    <i class="fa-solid fa-arrow-right me-1"></i> ملف الجمعية
+                </a>
+                <a href="{{ route('personnel.index') }}" class="btn btn-sm btn-outline-danger">
+                    <i class="fa-solid fa-xmark me-1"></i> إلغاء التصفية
+                </a>
+            </div>
+        </div>
+    @endif
+
     <!-- بطاقات الإحصائيات -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl">

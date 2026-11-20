@@ -646,6 +646,9 @@
         @endif
     </div>
 
+    <!-- مساعد حصاد الذكي المدمج (AI Copilot) -->
+    @include('partials.copilot')
+
     <!-- نافذة تثبيت التطبيق PWA Modal -->
     @include('partials.pwa-modal')
 

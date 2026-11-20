@@ -25,6 +25,16 @@
         </div>
     </div>
 
+    <!-- شريط الانتقال السريع بين المحافظات -->
+    <div class="d-flex gap-2 overflow-x-auto pb-2 mb-3 text-nowrap">
+        @foreach($governorates as $gov)
+            <a href="{{ route('geo-explorer.index', ['gov_id' => $gov->id]) }}" 
+               class="btn btn-sm {{ ($selectedGovId == $gov->id && empty($selectedDirId)) ? 'btn-hasad-primary' : 'btn-outline-secondary bg-white' }} rounded-pill px-3 shadow-xs">
+                <i class="fa-solid fa-map-pin me-1 opacity-75"></i> {{ $gov->name_ar }}
+            </a>
+        @endforeach
+    </div>
+
     <!-- شريط اختيار النطاق الجغرافي المستكشف -->
     <div class="filter-card">
         <form method="GET" action="{{ route('geo-explorer.index') }}">
@@ -47,7 +57,7 @@
     </div>
 
     <!-- بطاقة عنوان النطاق المختار -->
-    <div class="alert alert-light border rounded-3 p-3 mb-4 d-flex justify-content-between align-items-center bg-white shadow-sm">
+    <div class="alert alert-light border rounded-4 p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center bg-white shadow-sm gap-3">
         <div>
             <span class="text-muted small d-block">الملف الإحصائي والتشغيلي الموحد للنطاق:</span>
             <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -57,9 +67,15 @@
                 @if($currentUzl) <span class="text-muted">/</span> <span>عزلة {{ $currentUzl->name_ar }}</span> @endif
             </h5>
         </div>
-        <span class="badge bg-light text-dark font-monospace border p-2">
-            كود النطاق: {{ $currentUzl?->code ?? $currentDir?->code ?? $currentGov?->code ?? 'ALL' }}
-        </span>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-light text-dark font-monospace border p-2">
+                كود النطاق: {{ $currentUzl?->code ?? $currentDir?->code ?? $currentGov?->code ?? 'ALL' }}
+            </span>
+            <a href="{{ route('geo-explorer.print', ['gov_id' => $selectedGovId, 'dir_id' => $selectedDirId, 'uzl_id' => $selectedUzlId]) }}" target="_blank" class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1 shadow-sm">
+                <i class="fa-solid fa-print"></i>
+                <span>طباعة التقرير الشامل (PDF)</span>
+            </a>
+        </div>
     </div>
 
     <!-- بطاقات الإحصائيات المجمعة الست -->
@@ -139,6 +155,16 @@
                 <li class="nav-item">
                     <button class="nav-link fw-bold py-2 small" data-bs-toggle="tab" data-bs-target="#geo-loans" type="button">
                         <i class="fa-solid fa-hand-holding-dollar me-1"></i> القروض البيضاء ({{ $loans->count() }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold py-2 small" data-bs-toggle="tab" data-bs-target="#geo-initiatives" type="button">
+                        <i class="fa-solid fa-handshake-angle me-1"></i> المبادرات ({{ $initiatives->count() }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold py-2 small" data-bs-toggle="tab" data-bs-target="#geo-nurseries" type="button">
+                        <i class="fa-solid fa-seedling me-1"></i> المشاتل ({{ $nurseries->count() }})
                     </button>
                 </li>
             </ul>
@@ -234,6 +260,12 @@
 
                 <!-- 3. الكوادر والفرسان -->
                 <div class="tab-pane fade" id="geo-personnel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small">كشف فرسان التنمية والباحثين والكوادر في هذا النطاق ({{ $personnel->count() }} كادر)</span>
+                        <a href="{{ route('personnel.index', ['gov_id' => $selectedGovId, 'dir_id' => $selectedDirId]) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> فتح في السجل العام
+                        </a>
+                    </div>
                     @if($personnel->isEmpty())
                         <div class="text-center py-4 text-muted small">لا يوجد كوادر مسجلون في هذا النطاق.</div>
                     @else
@@ -246,6 +278,7 @@
                                         <th>الفئة</th>
                                         <th>التخصص</th>
                                         <th>الهاتف</th>
+                                        <th>الجمعية التابع لها</th>
                                         <th>التفعيل الميداني</th>
                                     </tr>
                                 </thead>
@@ -257,6 +290,7 @@
                                             <td><span class="badge-status badge-status-info">{{ $p->category }}</span></td>
                                             <td>{{ $p->sub_specialty ?: $p->specialization ?: '-' }}</td>
                                             <td class="font-monospace">{{ $p->phone ?: '-' }}</td>
+                                            <td>{{ $p->association?->name ?: '-' }}</td>
                                             <td>
                                                 @if($p->is_activated_in_field)
                                                     <span class="badge-status badge-status-success">
@@ -404,6 +438,66 @@
                                             <td>
                                                 <span class="badge-status badge-status-warning">
                                                     <span class="badge-status-dot"></span> {{ $ln->loan_status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 8. المبادرات المجتمعية -->
+                <div class="tab-pane fade" id="geo-initiatives">
+                    @if($initiatives->isEmpty())
+                        <div class="text-center py-4 text-muted small">لا توجد مبادرات مجتمعية مسجلة في هذا النطاق.</div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>اسم المبادرة</th>
+                                        <th>التكلفة التقديرية</th>
+                                        <th>عدد المستفيدين</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($initiatives as $init)
+                                        <tr>
+                                            <td class="fw-bold">{{ $init->initiative_name }}</td>
+                                            <td class="stat-num text-success">{{ number_format($init->cost) }} ر.ي</td>
+                                            <td class="stat-num text-dark">{{ number_format($init->beneficiaries_count) }} مستفيد</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 9. المشاتل الزراعية -->
+                <div class="tab-pane fade" id="geo-nurseries">
+                    @if($nurseries->isEmpty())
+                        <div class="text-center py-4 text-muted small">لا توجد مشاتل زراعية مسجلة في هذا النطاق.</div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-hasad align-middle mb-0 text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>اسم المشتل</th>
+                                        <th>الطاقة الإنتاجية السنوية</th>
+                                        <th>الحالة التشغيلية</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($nurseries as $nur)
+                                        <tr>
+                                            <td class="fw-bold">{{ $nur->nursery_name }}</td>
+                                            <td class="stat-num">{{ number_format($nur->capacity) }} شتلة</td>
+                                            <td>
+                                                <span class="badge-status badge-status-success">
+                                                    <span class="badge-status-dot"></span> {{ $nur->status }}
                                                 </span>
                                             </td>
                                         </tr>

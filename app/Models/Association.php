@@ -102,6 +102,11 @@ class Association extends Model
         return $this->hasMany(AssociationBoardMember::class, 'association_id');
     }
 
+    public function shareholders(): HasMany
+    {
+        return $this->hasMany(AssociationShareholder::class, 'association_id');
+    }
+
     public function productiveGroups(): HasMany
     {
         return $this->hasMany(ProductiveGroup::class, 'association_id');

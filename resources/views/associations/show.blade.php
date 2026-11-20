@@ -36,6 +36,10 @@
                     </div>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('associations.print', $association->id) }}" target="_blank" class="btn btn-outline-dark d-flex align-items-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-print"></i>
+                        <span>طباعة الملف الشامل (PDF)</span>
+                    </a>
                     <a href="{{ route('associations.edit', $association->id) }}" class="btn btn-hasad-primary d-flex align-items-center gap-1 shadow-sm">
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span>تعديل بيانات الجمعية</span>
@@ -51,27 +55,27 @@
 
             <!-- شريط المؤشرات السريعة للجمعية -->
             <div class="row g-2 text-center small">
-                <div class="col-6 col-md-2">
-                    <span class="text-muted d-block">إجمالي الأعضاء</span>
-                    <strong class="fs-6 text-dark stat-num">{{ number_format($association->total_members) }}</strong>
+                <div class="col-6 col-md-2" style="cursor: pointer;" onclick="document.getElementById('tab-members-tab').click();" title="اضغط لفتح سجل الأعضاء والمساهمين">
+                    <span class="text-muted d-block">إجمالي الأعضاء والمساهمين</span>
+                    <strong class="fs-6 text-primary stat-num">{{ number_format($association->total_members) }}</strong>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md-2" style="cursor: pointer;" onclick="document.getElementById('tab-financial-tab').click();" title="اضغط لفتح البيانات المالية">
                     <span class="text-muted d-block">رأس المال الحالي</span>
                     <strong class="fs-6 text-dark stat-num">{{ number_format($association->current_capital) }} ر.ي</strong>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md-2" style="cursor: pointer;" onclick="document.getElementById('tab-activities-tab').click();" title="اضغط لفتح المشاريع">
                     <span class="text-muted d-block">المشاريع المنفذة</span>
                     <strong class="fs-6 text-success stat-num">{{ $association->projects->count() ?: $association->implemented_projects_count }}</strong>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md-2" style="cursor: pointer;" onclick="document.getElementById('tab-activities-tab').click();" title="اضغط لفتح المجاميع الإنتاجية">
                     <span class="text-muted d-block">المجاميع الإنتاجية</span>
                     <strong class="fs-6 text-primary stat-num">{{ $association->productiveGroups->count() }}</strong>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md-2" style="cursor: pointer;" onclick="document.getElementById('tab-personnel-tab').click();" title="اضغط لفتح كشف الفرسان والكوادر">
                     <span class="text-muted d-block">الكوادر والفرسان</span>
                     <strong class="fs-6 text-info stat-num">{{ $association->personnel->count() }}</strong>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md-2" style="cursor: pointer;" onclick="document.getElementById('tab-loans-tab').click();" title="اضغط لفتح القروض">
                     <span class="text-muted d-block">القروض البيضاء</span>
                     <strong class="fs-6 text-warning stat-num">{{ $association->loans->count() }}</strong>
                 </div>
@@ -109,7 +113,7 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link fw-bold py-2 small" id="tab-members-tab" data-bs-toggle="tab" data-bs-target="#tab-members" type="button" role="tab">
-                        <i class="fa-solid fa-users me-1"></i> 4. الأعضاء والمنتسبين
+                        <i class="fa-solid fa-users me-1"></i> 4. الأعضاء والمساهمين ({{ $association->shareholders->count() }})
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -135,6 +139,11 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link fw-bold py-2 small" id="tab-evaluation-tab" data-bs-toggle="tab" data-bs-target="#tab-evaluation" type="button" role="tab">
                         <i class="fa-solid fa-clipboard-check me-1"></i> 9. المتابعة والتقييم
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold py-2 small" id="tab-personnel-tab" data-bs-toggle="tab" data-bs-target="#tab-personnel" type="button" role="tab">
+                        <i class="fa-solid fa-graduation-cap me-1"></i> 10. الفرسان والكوادر ({{ $association->personnel->count() }})
                     </button>
                 </li>
             </ul>
@@ -442,9 +451,131 @@
                     @endif
                 </div>
 
-                <!-- 4. بيانات الأعضاء والمنتسبين -->
+                <!-- 4. بيانات الأعضاء والمساهمين -->
                 <div class="tab-pane fade" id="tab-members" role="tabpanel">
-                    <h6 class="fw-bold text-info mb-3"><i class="fa-solid fa-users me-2"></i> بيانات الأعضاء والمنتسبين وقاعدة المستفيدين</h6>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <div>
+                            <h6 class="fw-bold text-success mb-1"><i class="fa-solid fa-users me-2"></i> سجل المساهمين والاكتتاب في رأس مال الجمعية</h6>
+                            <span class="text-muted small">إدارة قاعدة المساهمين، تتبع الأسهم، والمبالغ المدفوعة والمتبقية مع طباعة السندات الرسمية</span>
+                        </div>
+                        <button type="button" class="btn btn-hasad-primary btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddShareholder">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>تسجيل مساهم جديد</span>
+                        </button>
+                    </div>
+
+                    <!-- بطاقات إحصائيات المساهمين والأسهم -->
+                    <div class="row g-2 mb-4 text-center">
+                        <div class="col-6 col-md-2">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <span class="text-muted small d-block">المساهمين المسجلين</span>
+                                <h4 class="fw-bold text-dark mb-0 stat-num">{{ number_format($association->shareholders->count()) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <span class="text-muted small d-block">إجمالي الأسهم</span>
+                                <h4 class="fw-bold text-primary mb-0 stat-num">{{ number_format($association->shareholders->sum('shares_count')) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <span class="text-muted small d-block">رأس المال المكتتب به</span>
+                                <h4 class="fw-bold text-success mb-0 stat-num">{{ number_format($association->shareholders->sum('total_subscription_amount')) }} <span class="fs-6">ر.ي</span></h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <span class="text-muted small d-block">المبالغ المسددة فعلياً</span>
+                                <h4 class="fw-bold text-success mb-0 stat-num">{{ number_format($association->shareholders->sum('paid_amount')) }} <span class="fs-6">ر.ي</span></h4>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <span class="text-muted small d-block">المبالغ المتبقية</span>
+                                <h4 class="fw-bold text-danger mb-0 stat-num">{{ number_format($association->shareholders->sum('remaining_amount')) }} <span class="fs-6">ر.ي</span></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- جدول المساهمين المسجلين -->
+                    <div class="card border rounded-3 mb-4 shadow-sm overflow-hidden">
+                        <div class="card-header bg-white py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark small"><i class="fa-solid fa-list-check me-1 text-success"></i> كشف المساهمين والاكتتابات ({{ $association->shareholders->count() }})</span>
+                            @if(!$association->shareholders->isEmpty())
+                                <button onclick="window.print()" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-print me-1"></i> طباعة الكشف
+                                </button>
+                            @endif
+                        </div>
+                        @if($association->shareholders->isEmpty())
+                            <div class="p-4 text-center text-muted">
+                                <i class="fa-solid fa-user-group fs-2 mb-2 d-block text-secondary opacity-50"></i>
+                                <span>لم يتم تسجيل مساهمين تفصيليين في هذه الجمعية حتى الآن.</span>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-hasad-primary" data-bs-toggle="modal" data-bs-target="#modalAddShareholder">
+                                        <i class="fa-solid fa-plus me-1"></i> تسجيل أول مساهم
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <div class="table-responsive">
+                                <table class="table-hasad align-middle mb-0 text-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th>رقم المساهم</th>
+                                            <th>الاسم الرباعي</th>
+                                            <th>الهاتف / الهوية</th>
+                                            <th>الجنس</th>
+                                            <th>عدد الأسهم</th>
+                                            <th>قيمة السهم</th>
+                                            <th>إجمالي الاكتتاب</th>
+                                            <th>المسدد</th>
+                                            <th>المتبقي</th>
+                                            <th>تاريخ الانضمام</th>
+                                            <th>الحالة</th>
+                                            <th class="text-center">سند القبض</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($association->shareholders as $sh)
+                                            <tr>
+                                                <td><span class="badge bg-light text-dark border font-monospace">{{ $sh->shareholder_number }}</span></td>
+                                                <td class="fw-bold">{{ $sh->full_name }}</td>
+                                                <td>
+                                                    <span class="d-block font-monospace">{{ $sh->phone ?: '-' }}</span>
+                                                    <small class="text-muted">{{ $sh->national_id }}</small>
+                                                </td>
+                                                <td>{{ $sh->gender }}</td>
+                                                <td><span class="fw-bold text-primary">{{ number_format($sh->shares_count) }}</span></td>
+                                                <td>{{ number_format($sh->share_value) }} ر.ي</td>
+                                                <td class="fw-bold text-dark">{{ number_format($sh->total_subscription_amount) }} ر.ي</td>
+                                                <td class="text-success fw-bold">{{ number_format($sh->paid_amount) }} ر.ي</td>
+                                                <td class="{{ $sh->remaining_amount > 0 ? 'text-danger fw-bold' : 'text-muted' }}">
+                                                    {{ number_format($sh->remaining_amount) }} ر.ي
+                                                </td>
+                                                <td>{{ $sh->join_date?->format('Y-m-d') ?: '-' }}</td>
+                                                <td>
+                                                    <span class="badge {{ $sh->status === 'نشط' ? 'bg-success' : 'bg-secondary' }}">
+                                                        {{ $sh->status }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{ route('associations.shareholders.receipt', ['association' => $association->id, 'shareholder' => $sh->id]) }}" target="_blank" class="btn btn-sm btn-outline-success py-1 px-2" title="طباعة سند القبض والمساهمة">
+                                                        <i class="fa-solid fa-receipt me-1"></i> سند المساهمة
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="fw-bold text-info mb-3"><i class="fa-solid fa-users-viewfinder me-2"></i> بيانات الأعضاء والمنتسبين وقاعدة المستفيدين العامة</h6>
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 text-center">
@@ -848,6 +979,95 @@
                     </div>
                 </div>
 
+                <!-- 10. كشف الفرسان والكوادر التنموية للجمعية -->
+                <div class="tab-pane fade" id="tab-personnel" role="tabpanel">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <div>
+                            <h6 class="fw-bold text-info mb-1"><i class="fa-solid fa-graduation-cap me-2"></i> كشف الفرسان والكوادر التنموية المنتسبين للجمعية ({{ $association->personnel->count() }})</h6>
+                            <span class="text-muted small">عرض كشف مفصل بفرسان التنمية والباحثين الميدانيين والكوادر التابعة لجمعية {{ $association->name }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('personnel.index', ['association_id' => $association->id]) }}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>عرض بالسجل العام</span>
+                            </a>
+                            <button type="button" class="btn btn-hasad-primary btn-sm d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddPersonnelToAssoc">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <span>إضافة كادر للجمعية</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    @if($association->personnel->isEmpty())
+                        <div class="p-5 text-center bg-light rounded-4 text-muted border">
+                            <i class="fa-solid fa-user-graduate fs-1 mb-3 text-secondary opacity-50 d-block"></i>
+                            <h6 class="fw-bold text-dark">لا يوجد كوادر أو فرسان مسجلون تحت هذه الجمعية حالياً</h6>
+                            <p class="small text-muted mb-3">يمكنك تسجيل كادر أو فارس جديد وربطه بالجمعية مباشرة بالضغط على الزر أدناه.</p>
+                            <button type="button" class="btn btn-sm btn-hasad-primary" data-bs-toggle="modal" data-bs-target="#modalAddPersonnelToAssoc">
+                                <i class="fa-solid fa-plus me-1"></i> إضافة أول كادر للجمعية
+                            </button>
+                        </div>
+                    @else
+                        <div class="card border rounded-3 shadow-sm overflow-hidden mb-3">
+                            <div class="card-header bg-white py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark small"><i class="fa-solid fa-list me-1 text-primary"></i> قائمة فرسان الجمعية ({{ $association->personnel->count() }} كادر)</span>
+                                <button onclick="window.print()" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-print me-1"></i> طباعة كشف الفرسان
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table-hasad align-middle mb-0 text-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th>الكود الرقمي</th>
+                                            <th>الاسم الكامل</th>
+                                            <th>الفئة والتخصص</th>
+                                            <th>رقم الهاتف</th>
+                                            <th>الرقم الوطني</th>
+                                            <th>المؤهل</th>
+                                            <th>العزلة</th>
+                                            <th>تاريخ التدريب</th>
+                                            <th>الحالة الميدانية</th>
+                                            <th class="text-center">الملف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($association->personnel as $person)
+                                            <tr>
+                                                <td><span class="badge bg-light text-dark border font-monospace">{{ $person->code }}</span></td>
+                                                <td class="fw-bold text-dark">{{ $person->full_name }}</td>
+                                                <td>
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary">{{ $person->category }}</span>
+                                                    @if($person->sub_specialty)
+                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary ms-1">{{ $person->sub_specialty }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="font-monospace">{{ $person->phone ?: '-' }}</td>
+                                                <td class="font-monospace text-muted">{{ $person->national_id ?: '-' }}</td>
+                                                <td>{{ $person->qualification ?: '-' }}</td>
+                                                <td>{{ $person->uzlah?->name_ar ?: '-' }}</td>
+                                                <td>{{ $person->training_date?->format('Y-m-d') ?: '-' }}</td>
+                                                <td>
+                                                    @if($person->is_activated_in_field)
+                                                        <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> مفعل ميدانياً</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">غير مفعل</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{ route('personnel.show', $person->id) }}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">
+                                                        عرض
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
             </div>
         </div>
     </div>
@@ -1015,4 +1235,189 @@
         </div>
     </div>
 </div>
+
+<!-- مودال تسجيل مساهم جديد في الجمعية -->
+<div class="modal fade" id="modalAddShareholder" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow border-0 rounded-4">
+            <div class="modal-header bg-success text-white py-3">
+                <h6 class="modal-title fw-bold">
+                    <i class="fa-solid fa-user-plus me-2"></i> تسجيل مساهم واكتتاب أسهم جديدة
+                </h6>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <form method="POST" action="{{ route('associations.shareholders.store', $association->id) }}">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted">اسم المساهم الكامل <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" class="form-control" placeholder="الاسم الرباعي الكامل للمساهم" required>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">الرقم الوطني / الهوية</label>
+                            <input type="text" name="national_id" class="form-control" placeholder="رقم البطاقة">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">رقم الهاتف</label>
+                            <input type="text" name="phone" class="form-control" placeholder="77xxxxxxx">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">الجنس <span class="text-danger">*</span></label>
+                            <select name="gender" class="form-select" required>
+                                <option value="ذكر">ذكر</option>
+                                <option value="أنثى">أنثى</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">عدد الأسهم <span class="text-danger">*</span></label>
+                            <input type="number" min="1" name="shares_count" id="sh_shares_count" class="form-control" value="1" required>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">قيمة السهم الواحد (ر.ي) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="1" name="share_value" id="sh_share_value" class="form-control" value="{{ $association->share_value ?: 1000 }}" required>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">إجمالي الاكتتاب (تلقائي)</label>
+                            <input type="text" id="sh_total_amount" class="form-control bg-light font-monospace fw-bold text-success" readonly value="{{ $association->share_value ?: 1000 }}">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">المبلغ المدفوع الفعلي (ر.ي) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0" name="paid_amount" id="sh_paid_amount" class="form-control" value="{{ $association->share_value ?: 1000 }}" required>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">المبلغ المتبقي (تلقائي)</label>
+                            <input type="text" id="sh_remaining_amount" class="form-control bg-light font-monospace fw-bold text-danger" readonly value="0">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">تاريخ الاكتتاب / الانضمام</label>
+                            <input type="date" name="join_date" class="form-control" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">حالة المساهمة <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="نشط">مساهم نشط</option>
+                                <option value="معلق">معلق</option>
+                                <option value="منسحب">منسحب</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted">رقم سند القبض / الإيصال</label>
+                            <input type="text" name="receipt_number" class="form-control" placeholder="اتركه فارغاً للتوليد التلقائي">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted">ملاحظات إضافية</label>
+                            <input type="text" name="notes" class="form-control" placeholder="أي بيانات أو ملاحظات...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-hasad-primary btn-sm">
+                        <i class="fa-solid fa-check me-1"></i> حفظ وتوليد سند المساهمة
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- مودال إضافة كادر أو فارس إلى الجمعية -->
+<div class="modal fade" id="modalAddPersonnelToAssoc" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow border-0 rounded-4">
+            <div class="modal-header bg-primary text-white py-3">
+                <h6 class="modal-title fw-bold">
+                    <i class="fa-solid fa-graduation-cap me-2"></i> إضافة كادر / فارس تنموي تحت مظلة الجمعية
+                </h6>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <form method="POST" action="{{ route('associations.personnel.store', $association->id) }}">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted">الاسم الرباعي الكامل <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" class="form-control" placeholder="الاسم الرباعي للكادر" required>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">الفئة <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                @foreach(\App\Models\UnifiedPersonnel::CATEGORIES as $key => $lbl)
+                                    <option value="{{ $key }}">{{ $lbl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small fw-bold text-muted">التخصص الدقيق (للفرسان)</label>
+                            <select name="sub_specialty" class="form-select">
+                                <option value="">-- اختياري --</option>
+                                @foreach(\App\Models\UnifiedPersonnel::KNIGHTS_TYPES as $ktype)
+                                    <option value="{{ $ktype }}">{{ $ktype }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small fw-bold text-muted">رقم الهاتف</label>
+                            <input type="text" name="phone" class="form-control" placeholder="77xxxxxxx">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small fw-bold text-muted">الرقم الوطني / البطاقة</label>
+                            <input type="text" name="national_id" class="form-control">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small fw-bold text-muted">الجنس <span class="text-danger">*</span></label>
+                            <select name="gender" class="form-select" required>
+                                <option value="ذكر">ذكر</option>
+                                <option value="أنثى">أنثى</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted">المؤهل العلمي</label>
+                            <input type="text" name="qualification" class="form-control" placeholder="ثانوية، دبلوم، بكالوريوس...">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted">تاريخ التدريب أو التخرج</label>
+                            <input type="date" name="training_date" class="form-control" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_activated_in_field" value="1" id="switchActivated" checked>
+                                <label class="form-check-label fw-bold text-dark small" for="switchActivated">
+                                    مفعل ميدانياً ويباشر أنشطته الميدانية حالياً
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-check me-1"></i> حفظ وإضافة الكادر للجمعية
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // الحساب التلقائي لأسهم المساهمين
+    function recalcShareholder() {
+        const count = parseFloat(document.getElementById('sh_shares_count')?.value) || 0;
+        const val = parseFloat(document.getElementById('sh_share_value')?.value) || 0;
+        const paid = parseFloat(document.getElementById('sh_paid_amount')?.value) || 0;
+        const total = count * val;
+        const remaining = Math.max(0, total - paid);
+
+        const totalEl = document.getElementById('sh_total_amount');
+        const remEl = document.getElementById('sh_remaining_amount');
+        if (totalEl) totalEl.value = total.toLocaleString() + ' ر.ي';
+        if (remEl) remEl.value = remaining.toLocaleString() + ' ر.ي';
+    }
+
+    document.getElementById('sh_shares_count')?.addEventListener('input', recalcShareholder);
+    document.getElementById('sh_share_value')?.addEventListener('input', recalcShareholder);
+    document.getElementById('sh_paid_amount')?.addEventListener('input', recalcShareholder);
+</script>
 @endsection

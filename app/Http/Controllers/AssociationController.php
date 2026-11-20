@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Association;
 use App\Models\AssociationBoardMember;
 use App\Models\AssociationLoan;
+use App\Models\AssociationShareholder;
 use App\Models\Directorate;
 use App\Models\Governorate;
-use App\Models\Uzlah;
 use App\Models\SubLocation;
+use App\Models\UnifiedPersonnel;
+use App\Models\Uzlah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -176,6 +178,7 @@ class AssociationController extends Controller
             'uzlah',
             'subLocation',
             'boardMembers',
+            'shareholders',
             'productiveGroups.facilitators',
             'personnel',
             'loans',
@@ -394,5 +397,129 @@ class AssociationController extends Controller
 
         return redirect()->route('associations.show', ['association' => $association->id, '#tab-loans'])
             ->with('success', "تم تسجيل القرض الأبيض بنجاح بالكود: {$validated['code']}");
+    }
+
+    /**
+     * تسجيل مساهم جديد في الجمعية وتحديث رأس المال المكتتب والمدفوع
+     */
+    public function storeShareholder(Request $request, int $id)
+    {
+        $association = Association::findOrFail($id);
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'national_id' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:50',
+            'gender' => 'required|in:ذكر,أنثى',
+            'shares_count' => 'required|integer|min:1',
+            'share_value' => 'required|numeric|min:1',
+            'paid_amount' => 'required|numeric|min:0',
+            'join_date' => 'nullable|date',
+            'receipt_number' => 'nullable|string|max:100',
+            'status' => 'required|string|max:50',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $sharesCount = (int) $validated['shares_count'];
+        $shareValue = (float) $validated['share_value'];
+        $totalSubscription = $sharesCount * $shareValue;
+        $paidAmount = (float) $validated['paid_amount'];
+        $remainingAmount = max(0, $totalSubscription - $paidAmount);
+
+        $shareholder = AssociationShareholder::create([
+            'association_id' => $association->id,
+            'shareholder_number' => AssociationShareholder::generateShareholderNumber($association->id),
+            'full_name' => $validated['full_name'],
+            'national_id' => $validated['national_id'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'gender' => $validated['gender'],
+            'governorate_id' => $association->governorate_id,
+            'directorate_id' => $association->directorate_id,
+            'uzlah_id' => $association->uzlah_id,
+            'sub_location_id' => $association->sub_location_id,
+            'shares_count' => $sharesCount,
+            'share_value' => $shareValue,
+            'total_subscription_amount' => $totalSubscription,
+            'paid_amount' => $paidAmount,
+            'remaining_amount' => $remainingAmount,
+            'join_date' => $validated['join_date'] ?? now()->toDateString(),
+            'receipt_number' => $validated['receipt_number'] ?: ('REC-' . date('Ymd') . '-' . rand(100, 999)),
+            'status' => $validated['status'],
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        // تحديث إحصائيات الجمعية ورأس المال المحصل
+        $association->increment('total_members');
+        if ($validated['gender'] === 'أنثى') {
+            $association->increment('female_members');
+        } else {
+            $association->increment('male_members');
+        }
+        $association->increment('new_members_this_year');
+        if ($paidAmount > 0) {
+            $association->increment('current_capital', $paidAmount);
+        }
+
+        return redirect()->route('associations.show', ['association' => $association->id, '#tab-members'])
+            ->with('success', "تم تسجيل المساهم ({$shareholder->full_name}) برقم عضوية [{$shareholder->shareholder_number}] وإيداع {$paidAmount} ر.ي بنجاح.");
+    }
+
+    /**
+     * طباعة سند مساهمة رسمي
+     */
+    public function printShareholderReceipt(int $associationId, int $shareholderId): View
+    {
+        $association = Association::with(['governorate', 'directorate'])->findOrFail($associationId);
+        $shareholder = AssociationShareholder::where('association_id', $associationId)->findOrFail($shareholderId);
+
+        return view('associations.receipt', compact('association', 'shareholder'));
+    }
+
+    /**
+     * إضافة كادر/فارس مباشرة تحت مظلة الجمعية
+     */
+    public function storePersonnel(Request $request, int $id)
+    {
+        $association = Association::findOrFail($id);
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'sub_specialty' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:50',
+            'national_id' => 'nullable|string|max:50',
+            'gender' => 'required|in:ذكر,أنثى',
+            'qualification' => 'nullable|string|max:100',
+            'training_date' => 'nullable|date',
+            'is_activated_in_field' => 'nullable|boolean',
+            'notes' => 'nullable|string',
+        ]);
+
+        $validated['association_id'] = $association->id;
+        $validated['governorate_id'] = $association->governorate_id;
+        $validated['directorate_id'] = $association->directorate_id;
+        $validated['uzlah_id'] = $association->uzlah_id;
+        $validated['sub_location_id'] = $association->sub_location_id;
+        $validated['code'] = UnifiedPersonnel::generateCode($validated['category']);
+        $validated['is_activated_in_field'] = $request->boolean('is_activated_in_field');
+
+        $person = UnifiedPersonnel::create($validated);
+
+        return redirect()->route('associations.show', ['association' => $association->id, '#tab-personnel'])
+            ->with('success', "تم إضافة الكادر/الفارس ({$person->full_name}) إلى كشف الجمعية بنجاح بالكود: [{$person->code}]");
+    }
+
+    /**
+     * طباعة الملف الشامل الرسمي للجمعية
+     */
+    public function printDossier(int $id): View
+    {
+        $association = Association::with([
+            'governorate', 'directorate', 'uzlah', 'subLocation',
+            'boardMembers', 'shareholders', 'productiveGroups',
+            'personnel', 'loans', 'projects', 'crops', 'nurseries'
+        ])->findOrFail($id);
+
+        return view('associations.print', compact('association'));
     }
 }
