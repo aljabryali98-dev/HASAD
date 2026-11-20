@@ -136,7 +136,7 @@ class GeographyController extends Controller
         });
 
         return response()->json($directorates)
-            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+            ->header('Cache-Control', 'no-cache, private, must-revalidate');
     }
 
     /**
@@ -160,7 +160,7 @@ class GeographyController extends Controller
         });
 
         return response()->json($uzlahs)
-            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+            ->header('Cache-Control', 'no-cache, private, must-revalidate');
     }
 
     /**
@@ -190,7 +190,7 @@ class GeographyController extends Controller
         });
 
         return response()->json($villages)
-            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+            ->header('Cache-Control', 'no-cache, private, must-revalidate');
     }
 
     /**
@@ -211,6 +211,11 @@ class GeographyController extends Controller
             'name' => $validated['name'],
             'is_active' => true,
         ]);
+
+        // إفراغ الكاش الجغرافي
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget("geo_districts_{$validated['governorate_id']}");
 
         return redirect()->route('geography.index', ['gov_id' => $validated['governorate_id']])
             ->with('success', 'تمت إضافة المديرية بنجاح.');
@@ -239,6 +244,11 @@ class GeographyController extends Controller
             'type' => $validated['type'] ?? 'عزلة',
             'is_active' => true,
         ]);
+
+        // إفراغ الكاش الجغرافي
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget("geo_uzlahs_{$directorate->id}");
 
         return redirect()->route('geography.index', ['gov_id' => $directorate->governorate_id])
             ->with('success', 'تمت إضافة العزلة بنجاح.');
@@ -288,6 +298,11 @@ class GeographyController extends Controller
             ]
         );
 
+        // إفراغ الكاش فوراً حتى تظهر البيانات الجديدة لحظياً
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget("geo_villages_{$uzlah->id}");
+
         return redirect()->back()->with('success', "تمت إضافة ({$subLocation->name_ar}) بنجاح بالكود: {$subLocation->code}");
     }
 
@@ -320,6 +335,11 @@ class GeographyController extends Controller
             'is_active' => isset($validated['is_active']) ? (int)$validated['is_active'] : 1,
         ]);
 
+        // إفراغ الكاش
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget("geo_villages_{$subLocation->uzlah_id}");
+
         return redirect()->back()->with('success', "تم تحديث بيانات '{$subLocation->name_ar}' بنجاح.");
     }
 
@@ -330,7 +350,13 @@ class GeographyController extends Controller
     {
         $subLocation = SubLocation::findOrFail($id);
         $name = $subLocation->name_ar;
+        $uzlahId = $subLocation->uzlah_id;
         $subLocation->delete();
+
+        // إفراغ الكاش
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget("geo_villages_{$uzlahId}");
 
         return redirect()->back()->with('success', "تم حذف '{$name}' بنجاح.");
     }
@@ -377,8 +403,25 @@ class GeographyController extends Controller
                 'notes' => 'إضافة بالجملة',
                 'is_active' => 1,
             ]);
+
+            Village::firstOrCreate(
+                [
+                    'uzlah_id' => $uzlah->id,
+                    'name' => $name,
+                ],
+                [
+                    'sub_district_id' => $uzlah->id,
+                    'is_active' => true,
+                ]
+            );
+
             $addedCount++;
         }
+
+        // إفراغ الكاش فوراً
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget("geo_villages_{$uzlah->id}");
 
         return redirect()->back()->with('success', "تمت إضافة {$addedCount} مسمى بنجاح (تم تخطي {$skippedCount} مسمى مكرر مسبقاً).");
     }
@@ -389,8 +432,13 @@ class GeographyController extends Controller
     public function importExcel(Request $request, ExcelLocationImportService $importService)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,csv,txt|max:10240',
+            'file' => 'required|file|max:15360',
         ]);
+
+        $extension = strtolower($request->file('file')->getClientOriginalExtension());
+        if (!in_array($extension, ['xlsx', 'csv', 'txt', 'tsv'])) {
+            return redirect()->back()->with('error', 'صيغة الملف غير مدعومة. يرجى اختيار ملف Excel (.xlsx) أو CSV (.csv).');
+        }
 
         $result = $importService->import($request->file('file'));
 
@@ -398,8 +446,14 @@ class GeographyController extends Controller
             return redirect()->back()->with('error', $result['message']);
         }
 
+        // إفراغ الكاش الإحصائي والجغرافي فوراً
+        Cache::forget('geo_index_stats');
+        Cache::forget('geo_manage_stats');
+        Cache::forget('dashboard_kpis');
+        Cache::forget('dashboard_recent');
+
         $stats = $result['stats'];
-        $msg = "تم استيراد الملف بنجاح! إجمالي الصفوف: {$stats['total']} | مسميات جديدة أُنشئت تلقائياً: {$stats['created']} | مسميات مطابقة وموجودة مسبقاً: {$stats['existing']}";
+        $msg = "تم استيراد الملف وحفظ البيانات بنجاح! إجمالي الصفوف: {$stats['total']} | مسميات جديدة أُنشئت: {$stats['created']} | مسميات مطابقة وموجودة مسبقاً: {$stats['existing']}";
 
         if ($stats['failed'] > 0) {
             $msg .= " | صفوف غير مكتملة تم تخطيها: {$stats['failed']}";

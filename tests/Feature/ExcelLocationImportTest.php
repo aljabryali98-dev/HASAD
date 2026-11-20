@@ -124,4 +124,65 @@ class ExcelLocationImportTest extends TestCase
         $response->assertStatus(200)
             ->assertHeader('Content-Disposition', 'attachment; filename="hasad_locations_import_template.csv"');
     }
+
+    public function test_smart_import_auto_creates_missing_uzlah_without_failure(): void
+    {
+        $csvContent = "\xEF\xBB\xBF" . "المحافظة,المديرية,العزلة,القرية أو الجمعية,نوع الكيان\n";
+        $csvContent .= "صنعاء,سنحان وبني بهلول,عزلة وادي قرو الجديدة,قرية دار السلام,قرية\n";
+
+        $file = UploadedFile::fake()->createWithContent('new_uzlah.csv', $csvContent);
+
+        $service = new ExcelLocationImportService();
+        $result = $service->import($file);
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals(1, $result['stats']['created']);
+        $this->assertEquals(0, $result['stats']['failed']);
+
+        // التأكد من إنشاء العزلة تلقائياً
+        $this->assertDatabaseHas('uzlahs', [
+            'name_ar' => 'عزلة وادي قرو الجديدة',
+            'directorate_id' => $this->directorate->id,
+        ]);
+
+        // التأكد من حفظ القرية وربطها بالعزلة الجديدة
+        $this->assertDatabaseHas('sub_locations', [
+            'name_ar' => 'قرية دار السلام',
+            'entity_type' => 'قرية',
+        ]);
+
+        // التأكد من وجود القرية في جدول villages
+        $this->assertDatabaseHas('villages', [
+            'name' => 'قرية دار السلام',
+        ]);
+    }
+
+    public function test_smart_import_cooperative_association_persists_in_both_sublocations_and_associations(): void
+    {
+        $csvContent = "\xEF\xBB\xBF" . "المحافظة,المديرية,العزلة,القرية أو الجمعية,نوع الكيان,ملاحظات\n";
+        $csvContent .= "صنعاء,سنحان وبني بهلول,سنحان,جمعية الرواد التعاونية الزراعية,جمعية تعاونية,جمعية نموذجية للتمكين\n";
+
+        $file = UploadedFile::fake()->createWithContent('coop_import.csv', $csvContent);
+
+        $service = new ExcelLocationImportService();
+        $result = $service->import($file);
+
+        $this->assertTrue($result['success']);
+
+        // التحقق من الحفظ في جدول المستوى الرابع sub_locations
+        $this->assertDatabaseHas('sub_locations', [
+            'name_ar' => 'جمعية الرواد التعاونية الزراعية',
+            'entity_type' => 'جمعية تعاونية',
+            'notes' => 'جمعية نموذجية للتمكين',
+        ]);
+
+        // التحقق من الحفظ في جدول الجمعيات المركزي associations
+        $this->assertDatabaseHas('associations', [
+            'name' => 'جمعية الرواد التعاونية الزراعية',
+            'type' => 'زراعية',
+            'status' => 'نشطة',
+            'governorate_id' => $this->governorate->id,
+            'directorate_id' => $this->directorate->id,
+        ]);
+    }
 }
