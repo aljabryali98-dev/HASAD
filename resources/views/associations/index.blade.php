@@ -177,6 +177,9 @@
                     <table class="table table-hasad align-middle mb-0 text-nowrap">
                         <thead>
                             <tr>
+                                <th style="width: 40px;" class="text-center no-print">
+                                    <i class="fa-solid fa-code-compare text-muted" title="تحديد للمقارنة"></i>
+                                </th>
                                 <th style="width: 120px;">الكود</th>
                                 <th>اسم الجمعية الرسمي</th>
                                 <th>النوع</th>
@@ -192,6 +195,18 @@
                         <tbody>
                             @foreach($associations as $item)
                                 <tr>
+                                    <td class="text-center no-print">
+                                        <input type="checkbox" class="form-check-input assoc-compare-check" 
+                                               data-id="{{ $item->id }}" 
+                                               data-name="{{ $item->name }}" 
+                                               data-code="{{ $item->code }}" 
+                                               data-gov="{{ $item->governorate?->name_ar ?? '' }}" 
+                                               data-capital="{{ number_format($item->current_capital) }}" 
+                                               data-status="{{ $item->status }}"
+                                               data-type="{{ $item->type }}"
+                                               onchange="updateCompareDrawer()"
+                                               title="تحديد للمقارنة السريعة">
+                                    </td>
                                     <td>
                                         <span class="badge bg-light text-dark font-monospace border copyable-badge" 
                                               onclick="copyToClipboard('{{ $item->code }}', this)" 
@@ -282,5 +297,67 @@
             @endif
         </div>
     </div>
+    <!-- درج المقارنة السريعة للجمعيات (Quick Comparison Drawer) -->
+    <div class="compare-drawer" id="assocCompareDrawer">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-code-compare text-success fs-5"></i>
+                <h6 class="fw-bold mb-0 text-dark">مقارنة أداء الجمعيات المختارة (<span id="compareCount">0</span>)</h6>
+                <span class="text-muted small">مقارنة المؤشرات التشغيلية والمالية جنباً إلى جنب</span>
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearComparison()">
+                    <i class="fa-solid fa-xmark me-1"></i> إلغاء التحديد
+                </button>
+            </div>
+        </div>
+        <div class="row g-3" id="compareCardsContainer">
+            <!-- كروت المقارنة يتم توليدها ديناميكياً -->
+        </div>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function updateCompareDrawer() {
+        const checks = document.querySelectorAll('.assoc-compare-check:checked');
+        const drawer = document.getElementById('assocCompareDrawer');
+        const countSpan = document.getElementById('compareCount');
+        const container = document.getElementById('compareCardsContainer');
+        if (!drawer || !countSpan || !container) return;
+
+        countSpan.textContent = checks.length;
+        if (checks.length >= 2) {
+            drawer.classList.add('active');
+            let html = '';
+            checks.forEach(chk => {
+                html += `
+                    <div class="col-md-${checks.length === 2 ? '6' : '4'}">
+                        <div class="card p-3 border shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">${chk.dataset.name}</h6>
+                                    <span class="badge bg-light text-dark border font-monospace small">${chk.dataset.code}</span>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border small">${chk.dataset.status}</span>
+                            </div>
+                            <div class="small text-muted mb-1"><i class="fa-solid fa-location-dot me-1 text-success"></i>المحافظة: <strong class="text-dark">${chk.dataset.gov || '-'}</strong></div>
+                            <div class="small text-muted mb-1"><i class="fa-solid fa-tags me-1 text-primary"></i>النوع: <strong class="text-dark">${chk.dataset.type || '-'}</strong></div>
+                            <div class="small text-muted"><i class="fa-solid fa-coins me-1 text-warning"></i>رأس المال: <strong class="text-success">${chk.dataset.capital} ر.ي</strong></div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } else {
+            drawer.classList.remove('active');
+        }
+    }
+
+    function clearComparison() {
+        document.querySelectorAll('.assoc-compare-check:checked').forEach(c => c.checked = false);
+        updateCompareDrawer();
+    }
+</script>
+@endpush

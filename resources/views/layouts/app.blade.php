@@ -32,9 +32,37 @@
     <!-- ملف التنسيق المؤسسي الموحد (HASAD Emerald Corporate Theme) -->
     <link href="{{ asset('css/hasad-theme.css') }}" rel="stylesheet">
 
+    <!-- قراءة وتطبيق تفضيل الوضع الليلي مبكراً لمنع الوميض (Anti-Flicker Early Theme Script) -->
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('hasad-theme-mode') || 'light';
+                document.documentElement.setAttribute('data-theme-mode', savedTheme);
+            } catch (e) {}
+        })();
+    </script>
+
     @stack('styles')
 </head>
 <body>
+
+    <!-- ترويسة الطباعة الرسمية للتقارير التنفيذية (@media print) -->
+    <div class="hasad-print-header">
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+            <div class="text-start">
+                <span class="d-block fw-bold small">الجمهورية اليمنية</span>
+                <span class="d-block small text-muted">اللجنة الزراعية والسمكية العليا</span>
+            </div>
+            <div class="text-center">
+                <h4 class="fw-bold mb-0 text-success">نظام حصاد للرصد والتقييم والتحليل التعاوني</h4>
+                <span class="small text-muted font-monospace">تقرير رسمي معتمد للبيانات والمعلومات</span>
+            </div>
+            <div class="text-end font-monospace small">
+                <div>تاريخ الاستخراج: {{ date('Y-m-d H:i') }}</div>
+                <div>المستخدم: {{ auth()->user()->name ?? 'مدير النظام' }}</div>
+            </div>
+        </div>
+    </div>
 
     <!-- شريط تقدم التحميل اللحظي الفائق (Instant Top Loader) -->
     <div id="hasadTopLoader" style="position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: linear-gradient(90deg, #10B981 0%, #065F46 100%); z-index: 999999; transition: width 0.25s ease, opacity 0.25s ease; opacity: 0; pointer-events: none;"></div>
@@ -175,9 +203,58 @@
     <!-- مكتبة الرسوم البيانية التفاعلية الفائقة (ApexCharts) -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <!-- وظائف التفاعل الفاخرة (Micro-interactions & Polish) -->
+    <!-- وظائف التفاعل الفاخرة، الوضع الليلي، ولوحة الأوامر الذكية (Enterprise Polish Engine) -->
     <script>
-        // نسخ سريع إلى الحافظة (One-Click Clipboard Copy)
+        // 1. إدارة الوضع الليلي المؤسسي (Dark / Light Theme Toggle)
+        function updateThemeUI() {
+            const currentTheme = document.documentElement.getAttribute('data-theme-mode') || 'light';
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                if (currentTheme === 'dark') {
+                    themeIcon.className = 'fa-solid fa-sun text-warning';
+                } else {
+                    themeIcon.className = 'fa-solid fa-moon text-muted';
+                }
+            }
+        }
+
+        function toggleThemeMode() {
+            const current = document.documentElement.getAttribute('data-theme-mode') || 'light';
+            const nextTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme-mode', nextTheme);
+            try {
+                localStorage.setItem('hasad-theme-mode', nextTheme);
+            } catch (e) {}
+            updateThemeUI();
+            showToast(nextTheme === 'dark' ? 'تم تفعيل الوضع الليلي الفاخر' : 'تم تفعيل الوضع النهاري القياسي', 'info');
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeUI);
+
+        // 2. مؤشر حالة الشبكة الميدانية (Network Resilience)
+        function updateNetworkStatus() {
+            const pill = document.getElementById('networkStatusPill');
+            const text = document.getElementById('networkStatusText');
+            if (!pill || !text) return;
+
+            if (navigator.onLine) {
+                pill.className = 'network-status-pill online d-none d-sm-inline-flex';
+                text.textContent = 'متصل لحظياً';
+            } else {
+                pill.className = 'network-status-pill offline d-inline-flex';
+                text.textContent = 'انقطع الاتصال بالشبكة';
+                showToast('تنبيه ميداني: انقطع الاتصال بالإنترنت! يرجى عدم إرسال البيانات حتى استقرار الشبكة.', 'danger');
+            }
+        }
+
+        window.addEventListener('online', function() {
+            updateNetworkStatus();
+            showToast('تمت استعادة الاتصال بالشبكة السحابية بنجاح.', 'success');
+        });
+        window.addEventListener('offline', updateNetworkStatus);
+        document.addEventListener('DOMContentLoaded', updateNetworkStatus);
+
+        // 3. نسخ سريع إلى الحافظة (One-Click Clipboard Copy)
         function copyToClipboard(text, btnElement) {
             if (!text) return;
             navigator.clipboard.writeText(text).then(function() {
@@ -192,7 +269,7 @@
             });
         }
 
-        // تبديل وضع ملء الشاشة (Fullscreen Toggle)
+        // 4. تبديل وضع ملء الشاشة (Fullscreen Toggle)
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
@@ -203,7 +280,7 @@
             }
         }
 
-        // نظام الإشعارات العائمة التفاعلية (Toast System)
+        // 5. نظام الإشعارات العائمة التفاعلية (Floating Toast Notifications)
         function showToast(message, type = 'success') {
             const container = document.getElementById('hasadToastContainer');
             if (!container) return;
@@ -229,27 +306,181 @@
             }, 4500);
         }
 
-        // اختصار لوحة المفاتيح للبحث السريع (Ctrl + K أو Cmd + K)
+        // 6. لوحة الأوامر الذكية العائمة (Command Palette)
+        const systemCommands = [
+            { title: 'لوحة الإحصائيات والمتابعة المركزية', category: 'الرئيسية', icon: 'fa-gauge-high', url: '{{ route('dashboard') }}' },
+            { title: 'سجل الجمعيات التعاونية (الكيانات المركزية)', category: 'الجمعيات', icon: 'fa-building-columns', url: '{{ route('associations.index') }}' },
+            { title: 'تسجيل وتأسيس جمعية جديدة', category: 'الجمعيات', icon: 'fa-plus-circle', url: '{{ route('associations.create') }}' },
+            { title: 'المجاميع الإنتاجية الميدانية', category: 'المجاميع', icon: 'fa-people-roof', url: '{{ route('productive-groups.index') }}' },
+            { title: 'بنك الكوادر والفرسان والتدريب', category: 'الكوادر', icon: 'fa-user-graduate', url: '{{ route('personnel.index') }}' },
+            { title: 'محفظة القروض البيضاء (0% فوائد)', category: 'التمويل', icon: 'fa-hand-holding-dollar', url: '{{ route('general.loans.index') }}' },
+            { title: 'المستكشف الجغرافي الشامل', category: 'الجغرافيا', icon: 'fa-earth-asia', url: '{{ route('geo-explorer.index') }}' },
+            { title: 'إدارة النطاق الجغرافي والقرى', category: 'الجغرافيا', icon: 'fa-network-wired', url: '{{ route('geography.manage') }}' },
+            { title: 'مشاريع الجمعيات التنموية', category: 'المشاريع', icon: 'fa-diagram-project', url: '{{ route('general.projects.index') }}' },
+            { title: 'سجل المزارعين والحيازات الزراعية', category: 'الزراعة', icon: 'fa-tractor', url: '{{ route('general.farmers.index') }}' },
+            { title: 'المشاتل الزراعية المعتمدة', category: 'الزراعة', icon: 'fa-tree', url: '{{ route('general.nurseries.index') }}' },
+            { title: 'المبادرات المجتمعية الميدانية', category: 'المبادرات', icon: 'fa-handshake', url: '{{ route('general.initiatives.index') }}' },
+            { title: 'تفعيل الوضع الليلي / الفاتح', category: 'المظهر', icon: 'fa-circle-half-stroke', action: 'toggleTheme' },
+            { title: 'طباعة رسمية A4 للصفحة الحالية', category: 'أدوات', icon: 'fa-print', action: 'print' }
+        ];
+
+        function openCommandPalette() {
+            const backdrop = document.getElementById('commandPaletteBackdrop');
+            const input = document.getElementById('commandPaletteInput');
+            if (backdrop && input) {
+                backdrop.classList.add('active');
+                input.value = '';
+                renderCommandResults('');
+                setTimeout(() => input.focus(), 80);
+            }
+        }
+
+        function closeCommandPalette() {
+            const backdrop = document.getElementById('commandPaletteBackdrop');
+            if (backdrop) {
+                backdrop.classList.remove('active');
+            }
+        }
+
+        function renderCommandResults(query) {
+            const list = document.getElementById('commandPaletteResults');
+            if (!list) return;
+            const q = query.trim().toLowerCase();
+            const filtered = systemCommands.filter(c => !q || c.title.toLowerCase().includes(q) || c.category.toLowerCase().includes(q));
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<li class="p-4 text-center text-muted small"><i class="fa-solid fa-magnifying-glass mb-2 d-block fs-4"></i>لا توجد أوامر أو صفحات تطابق: "${query}"</li>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map((c, idx) => `
+                <li>
+                    <div class="command-palette-item ${idx === 0 ? 'active' : ''}" data-idx="${idx}" onclick="executeCommand(${idx})">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid ${c.icon} text-success" style="width: 20px;"></i>
+                            <span class="fw-semibold small">${c.title}</span>
+                        </div>
+                        <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.7rem;">${c.category}</span>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function executeCommand(idx) {
+            const input = document.getElementById('commandPaletteInput');
+            const q = input ? input.value.trim().toLowerCase() : '';
+            const filtered = systemCommands.filter(c => !q || c.title.toLowerCase().includes(q) || c.category.toLowerCase().includes(q));
+            const cmd = filtered[idx];
+            if (!cmd) return;
+
+            closeCommandPalette();
+            if (cmd.url) {
+                window.location.href = cmd.url;
+            } else if (cmd.action === 'toggleTheme') {
+                toggleThemeMode();
+            } else if (cmd.action === 'print') {
+                window.print();
+            }
+        }
+
         document.addEventListener('keydown', function(e) {
+            // فتح لوحة الأوامر عبر Ctrl + K أو Cmd + K
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                const searchInput = document.querySelector('.header-search input');
-                if (searchInput) {
-                    searchInput.focus();
-                    searchInput.select();
+                const backdrop = document.getElementById('commandPaletteBackdrop');
+                if (backdrop && backdrop.classList.contains('active')) {
+                    closeCommandPalette();
+                } else {
+                    openCommandPalette();
                 }
+            }
+            // إغلاق لوحة الأوامر عبر ESC
+            if (e.key === 'Escape') {
+                closeCommandPalette();
             }
         });
 
-        // إخفاء تنبيهات الجلسة تلقائياً بعد 5 ثوانٍ
-        setTimeout(function() {
-            document.querySelectorAll('#hasadToastContainer .hasad-toast').forEach(function(toast) {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-10px)';
-                setTimeout(() => toast.remove(), 350);
+        // متابعة الكتابة في لوحة الأوامر
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('commandPaletteInput');
+            if (input) {
+                input.addEventListener('input', function() {
+                    renderCommandResults(this.value);
+                });
+                input.addEventListener('keydown', function(e) {
+                    const list = document.getElementById('commandPaletteResults');
+                    if (!list) return;
+                    const items = list.querySelectorAll('.command-palette-item');
+                    let currentActive = list.querySelector('.command-palette-item.active');
+                    let activeIdx = currentActive ? parseInt(currentActive.dataset.idx) : 0;
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        activeIdx = (activeIdx + 1) % items.length;
+                        items.forEach(el => el.classList.remove('active'));
+                        if (items[activeIdx]) items[activeIdx].classList.add('active');
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        activeIdx = (activeIdx - 1 + items.length) % items.length;
+                        items.forEach(el => el.classList.remove('active'));
+                        if (items[activeIdx]) items[activeIdx].classList.add('active');
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        executeCommand(activeIdx);
+                    }
+                });
+            }
+        });
+
+        // 7. العدادات الرقمية التفاعلية الحركية (Animated Count-Up on Load)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.stat-num').forEach(function(el) {
+                const text = el.textContent.trim().replace(/,/g, '');
+                const target = parseFloat(text);
+                if (!isNaN(target) && target > 0 && target <= 10000000) {
+                    let start = 0;
+                    const duration = 750;
+                    const startTime = performance.now();
+                    function updateCounter(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        const current = Math.floor(start + (target - start) * easeOut);
+                        el.textContent = current.toLocaleString();
+                        if (progress < 1) {
+                            requestAnimationFrame(updateCounter);
+                        } else {
+                            el.textContent = target.toLocaleString();
+                        }
+                    }
+                    requestAnimationFrame(updateCounter);
+                }
             });
-        }, 5500);
+
+            // إخفاء إشعارات الجلسة التلقائية بعد 5 ثوانٍ
+            setTimeout(function() {
+                document.querySelectorAll('#hasadToastContainer .hasad-toast').forEach(function(toast) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-10px)';
+                    setTimeout(() => toast.remove(), 350);
+                });
+            }, 5500);
+        });
     </script>
+
+    <!-- نافذة لوحة الأوامر الذكية العائمة (Command Palette Backdrop & Modal) -->
+    <div class="command-palette-backdrop" id="commandPaletteBackdrop" onclick="if(event.target === this) closeCommandPalette()">
+        <div class="command-palette-card">
+            <div class="command-palette-input-wrapper">
+                <i class="fa-solid fa-terminal text-success fs-5"></i>
+                <input type="text" class="command-palette-input" id="commandPaletteInput" placeholder="اكتب أمراً أو ابحث عن صفحة... (مثال: جمعية، قروض، فرسان)" autocomplete="off">
+                <span class="badge bg-light text-muted border font-monospace small">ESC للإغلاق</span>
+            </div>
+            <ul class="command-palette-results" id="commandPaletteResults">
+                <!-- يتم توليد النتائج تفاعلياً -->
+            </ul>
+        </div>
+    </div>
 
     <!-- حاوية الإشعارات العائمة التفاعلية (Floating Toast Notifications) -->
     <div class="hasad-toast-container" id="hasadToastContainer">

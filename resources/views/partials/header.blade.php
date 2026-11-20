@@ -5,10 +5,10 @@
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <!-- حقل البحث السريع المؤسسي مع اختصار لوحة المفاتيح -->
-        <div class="header-search d-none d-md-block position-relative">
+        <!-- حقل البحث السريع المؤسسي مع لوحة الأوامر الذكية -->
+        <div class="header-search d-none d-md-block position-relative" onclick="openCommandPalette()" style="cursor: pointer;">
             <i class="fa-solid fa-magnifying-glass header-search-icon"></i>
-            <input type="search" placeholder="بحث سريع في سجلات حصاد..." aria-label="بحث">
+            <input type="search" placeholder="ابحث أو نفذ أمراً سريعاً... (Ctrl + K)" aria-label="بحث" readonly style="cursor: pointer;">
             <span class="position-absolute start-0 top-50 translate-middle-y ms-2 badge bg-light text-muted border font-monospace" style="font-size: 0.65rem; pointer-events: none;">
                 Ctrl + K
             </span>
@@ -16,11 +16,32 @@
     </div>
 
     <div class="d-flex align-items-center gap-2 gap-sm-3">
+        <!-- مؤشر حالة الاتصال الميداني بالشبكة (Network Resilience) -->
+        <div class="network-status-pill online d-none d-sm-inline-flex" id="networkStatusPill" title="حالة الاتصال الميداني">
+            <i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i>
+            <span id="networkStatusText">متصل لحظياً</span>
+        </div>
+
         <!-- التاريخ والتقويم الرسمي -->
-        <div class="d-none d-lg-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border text-muted small">
+        <div class="d-none d-xl-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border text-muted small">
             <i class="fa-regular fa-calendar-check text-success"></i>
             <span class="font-monospace fw-semibold">{{ date('Y-m-d') }}</span>
         </div>
+
+        <!-- زر لوحة الأوامر الذكية (Command Palette Button) -->
+        <button type="button" class="btn-header-action" onclick="openCommandPalette()" title="لوحة الأوامر الذكية (Ctrl + K)">
+            <i class="fa-solid fa-terminal"></i>
+        </button>
+
+        <!-- زر التبديل بين الوضع الليلي والنهاري (Dark / Light Mode) -->
+        <button type="button" class="btn-header-action" id="themeToggleBtn" onclick="toggleThemeMode()" title="تبديل الوضع الليلي / الفاتح">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+
+        <!-- زر الطباعة الرسمية (Official Print) -->
+        <button type="button" class="btn-header-action no-print" onclick="window.print()" title="طباعة رسمية A4">
+            <i class="fa-solid fa-print"></i>
+        </button>
 
         <!-- زر ملء الشاشة (Fullscreen Toggle) -->
         <button type="button" class="btn-header-action" onclick="toggleFullScreen()" title="تبديل وضع ملء الشاشة">

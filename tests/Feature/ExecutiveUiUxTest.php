@@ -73,6 +73,10 @@ class ExecutiveUiUxTest extends TestCase
         $response->assertSee('btnToggleDetailedView');
         $response->assertSee('ApexCharts');
         $response->assertSee('hasadToastContainer');
+        $response->assertSee('themeToggleBtn');
+        $response->assertSee('commandPaletteBackdrop');
+        $response->assertSee('networkStatusPill');
+        $response->assertSee('hasad-print-header');
     }
 
     public function test_associations_index_renders_with_collapsible_filter(): void
@@ -95,6 +99,7 @@ class ExecutiveUiUxTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('filterFormCollapse');
         $response->assertSee('copyable-badge');
+        $response->assertSee('assocCompareDrawer');
     }
 
     public function test_productive_groups_renders_with_collapsible_filter(): void
