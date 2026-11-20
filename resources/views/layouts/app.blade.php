@@ -109,18 +109,24 @@
             <i class="fa-solid fa-house"></i>
             <span>الرئيسية</span>
         </a>
+        @hasPermission('associations.view')
         <a href="{{ route('associations.index') }}" class="mobile-nav-item {{ request()->routeIs('associations.*') ? 'active' : '' }}">
             <i class="fa-solid fa-building-columns"></i>
             <span>الجمعيات</span>
         </a>
+        @endhasPermission
+        @hasPermission('personnel.view')
         <a href="{{ route('personnel.index') }}" class="mobile-nav-item {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
             <i class="fa-solid fa-user-graduate"></i>
             <span>الفرسان</span>
         </a>
+        @endhasPermission
+        @hasPermission('import.view')
         <a href="{{ route('import.smart') }}" class="mobile-nav-item {{ request()->routeIs('import.smart*') ? 'active' : '' }}">
             <i class="fa-solid fa-file-excel"></i>
             <span>استيراد</span>
         </a>
+        @endhasPermission
         <button type="button" class="mobile-nav-item mobile-nav-menu-btn" id="mobileBottomMenuBtn" aria-label="فتح القائمة الكاملة">
             <i class="fa-solid fa-bars-staggered"></i>
             <span>القائمة</span>
@@ -384,19 +390,44 @@
 
         // 6. لوحة الأوامر الذكية العائمة (Command Palette)
         const systemCommands = [
+            @hasPermission('dashboard.view')
             { title: 'لوحة الإحصائيات والمتابعة المركزية', category: 'الرئيسية', icon: 'fa-gauge-high', url: '{{ route('dashboard') }}' },
+            @endhasPermission
+            @hasPermission('associations.view')
             { title: 'سجل الجمعيات التعاونية (الكيانات المركزية)', category: 'الجمعيات', icon: 'fa-building-columns', url: '{{ route('associations.index') }}' },
+            @endhasPermission
+            @hasPermission('associations.create')
             { title: 'تسجيل وتأسيس جمعية جديدة', category: 'الجمعيات', icon: 'fa-plus-circle', url: '{{ route('associations.create') }}' },
+            @endhasPermission
+            @hasPermission('productive_groups.view')
             { title: 'المجاميع الإنتاجية الميدانية', category: 'المجاميع', icon: 'fa-people-roof', url: '{{ route('productive-groups.index') }}' },
+            @endhasPermission
+            @hasPermission('personnel.view')
             { title: 'بنك الكوادر والفرسان والتدريب', category: 'الكوادر', icon: 'fa-user-graduate', url: '{{ route('personnel.index') }}' },
+            @endhasPermission
+            @hasPermission('loans.view')
             { title: 'محفظة القروض البيضاء (0% فوائد)', category: 'التمويل', icon: 'fa-hand-holding-dollar', url: '{{ route('general.loans.index') }}' },
+            @endhasPermission
+            @hasPermission('geography.view')
             { title: 'المستكشف الجغرافي الشامل', category: 'الجغرافيا', icon: 'fa-earth-asia', url: '{{ route('geo-explorer.index') }}' },
+            @endhasPermission
+            @hasPermission('geography.manage')
             { title: 'إدارة النطاق الجغرافي والقرى', category: 'الجغرافيا', icon: 'fa-network-wired', url: '{{ route('geography.manage') }}' },
+            @endhasPermission
+            @hasPermission('import.view')
             { title: 'الاستيراد الذكي الشامل من ملفات الإكسل (Smart Excel Import)', category: 'الأدوات', icon: 'fa-file-excel', url: '{{ route('import.smart') }}' },
+            @endhasPermission
+            @hasPermission('projects.view')
             { title: 'مشاريع الجمعيات التنموية', category: 'المشاريع', icon: 'fa-diagram-project', url: '{{ route('general.projects.index') }}' },
+            { title: 'المبادرات المجتمعية الميدانية', category: 'المبادرات', icon: 'fa-handshake', url: '{{ route('general.initiatives.index') }}' },
+            @endhasPermission
+            @hasPermission('crops.view')
             { title: 'سجل المزارعين والحيازات الزراعية', category: 'الزراعة', icon: 'fa-tractor', url: '{{ route('general.farmers.index') }}' },
             { title: 'المشاتل الزراعية المعتمدة', category: 'الزراعة', icon: 'fa-tree', url: '{{ route('general.nurseries.index') }}' },
-            { title: 'المبادرات المجتمعية الميدانية', category: 'المبادرات', icon: 'fa-handshake', url: '{{ route('general.initiatives.index') }}' },
+            @endhasPermission
+            @hasPermission('users.view')
+            { title: 'إدارة المستخدمين وضبط الصلاحيات المؤسسية', category: 'الأمان', icon: 'fa-users-gear', url: '{{ route('users.index') }}' },
+            @endhasPermission
             { title: 'تفعيل الوضع الليلي / الفاتح', category: 'المظهر', icon: 'fa-circle-half-stroke', action: 'toggleTheme' },
             { title: 'طباعة رسمية A4 للصفحة الحالية', category: 'أدوات', icon: 'fa-print', action: 'print' },
             { title: 'تثبيت تطبيق حصاد على جهازك (لابتوب / أندرويد / آيفون)', category: 'تطبيق', icon: 'fa-mobile-screen-button', action: 'installPwa' }

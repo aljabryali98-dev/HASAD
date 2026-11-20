@@ -42,18 +42,23 @@
         </div>
     </div>
     
-    <!-- قائمة الروابط المصنفة -->
+    <!-- قائمة الروابط المصنفة بحسب الصلاحيات الممنوحة -->
     <div class="sidebar-menu-wrapper">
         <ul class="side-menu">
+            
+            @hasPermission('dashboard.view')
             <li>
                 <a href="{{ route('dashboard') }}" class="side-menu__item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="fa-solid fa-house" data-lucide="layout-dashboard"></i>
                     <span>لوحة التحكم الرئيسية</span>
                 </a>
             </li>
+            @endhasPermission
 
+            @if(auth()->user()->hasPermission('associations.view') || auth()->user()->hasPermission('productive_groups.view'))
             <li class="side-menu__category">الكيانات المركزية والتشغيلية</li>
 
+            @hasPermission('associations.view')
             <!-- القسم الأول: الجمعيات التعاونية -->
             <li>
                 <a href="{{ route('associations.index') }}" class="side-menu__item {{ request()->routeIs('associations.*') ? 'active' : '' }}">
@@ -61,7 +66,9 @@
                     <span>الجمعيات التعاونية</span>
                 </a>
             </li>
+            @endhasPermission
 
+            @hasPermission('productive_groups.view')
             <!-- القسم الثاني: المجاميع الإنتاجية -->
             <li>
                 <a href="{{ route('productive-groups.index') }}" class="side-menu__item {{ request()->routeIs('productive-groups.*') ? 'active' : '' }}">
@@ -69,18 +76,24 @@
                     <span>المجاميع الإنتاجية</span>
                 </a>
             </li>
+            @endhasPermission
+            @endif
 
+            @if(auth()->user()->hasPermission('personnel.view') || auth()->user()->hasPermission('projects.view') || auth()->user()->hasPermission('crops.view') || auth()->user()->hasPermission('loans.view'))
             <li class="side-menu__category">قاعدة البيانات العامة (المحاور)</li>
 
             <!-- المحور (أ): الكوادر والفرسان والتدريب -->
+            @hasPermission('personnel.view')
             <li>
                 <a href="{{ route('personnel.index') }}" class="side-menu__item {{ request()->routeIs('personnel.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-user-graduate" data-lucide="graduation-cap"></i>
                     <span>الكوادر والفرسان والتدريب</span>
                 </a>
             </li>
+            @endhasPermission
 
             <!-- المحور (ب): المشاريع والمبادرات -->
+            @hasPermission('projects.view')
             <li>
                 <a class="side-menu__item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuProjects" role="button" aria-expanded="{{ request()->routeIs('general.projects.*', 'general.awareness.*', 'general.initiatives.*') ? 'true' : 'false' }}">
                     <div class="d-flex align-items-center">
@@ -112,8 +125,10 @@
                     </ul>
                 </div>
             </li>
+            @endhasPermission
 
             <!-- المحور (ج): الزراعة والإنتاج والمحاصيل -->
+            @hasPermission('crops.view')
             <li>
                 <a class="side-menu__item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuAgriculture" role="button" aria-expanded="{{ request()->routeIs('general.crops.*', 'general.nurseries.*', 'general.farmers.*') ? 'true' : 'false' }}">
                     <div class="d-flex align-items-center">
@@ -145,25 +160,33 @@
                     </ul>
                 </div>
             </li>
+            @endhasPermission
 
             <!-- المحور (د): التمويل والتمكين -->
+            @hasPermission('loans.view')
             <li>
                 <a href="{{ route('general.loans.index') }}" class="side-menu__item {{ request()->routeIs('general.loans.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-hand-holding-dollar" data-lucide="hand-coins"></i>
                     <span>القروض التمويلية البيضاء</span>
                 </a>
             </li>
+            @endhasPermission
+            @endif
 
+            @if(auth()->user()->hasPermission('geography.view') || auth()->user()->hasPermission('geography.manage'))
             <li class="side-menu__category">النطاق الجغرافي والتحليلات</li>
 
             <!-- مستكشف النطاق الجغرافي الشامل (Geo-Explorer) -->
+            @hasPermission('geography.view')
             <li>
                 <a href="{{ route('geo-explorer.index') }}" class="side-menu__item {{ request()->routeIs('geo-explorer.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-earth-asia" data-lucide="globe"></i>
                     <span>المستكشف الجغرافي (34 قسماً)</span>
                 </a>
             </li>
+            @endhasPermission
 
+            @hasPermission('geography.manage')
             <!-- التقسيم الجغرافي الرسمي -->
             <li>
                 <a href="{{ route('geography.index') }}" class="side-menu__item {{ request()->routeIs('geography.index') ? 'active' : '' }}">
@@ -179,10 +202,13 @@
                     <span>إدارة النطاق والقرى والجمعيات</span>
                 </a>
             </li>
+            @endhasPermission
+            @endif
 
             <li class="side-menu__category">أدوات النظام والمعالجة الذكية</li>
 
             <!-- الاستيراد الذكي الشامل من ملفات الإكسل -->
+            @hasPermission('import.view')
             <li>
                 <a href="{{ route('import.smart') }}" class="side-menu__item {{ request()->routeIs('import.smart*') ? 'active' : '' }}">
                     <i class="fa-solid fa-file-excel text-success" data-lucide="file-spreadsheet"></i>
@@ -190,6 +216,7 @@
                     <span class="badge bg-emerald-500/10 text-success border border-emerald-500/20 ms-auto font-monospace" style="font-size: 0.65rem;">شامل</span>
                 </a>
             </li>
+            @endhasPermission
 
             <!-- تثبيت تطبيق حصاد (PWA Universal Install) -->
             <li>
@@ -199,6 +226,19 @@
                     <span class="badge bg-success-subtle text-success border border-success-subtle ms-auto" style="font-size: 0.65rem;">تثبيت</span>
                 </a>
             </li>
+
+            @hasPermission('users.view')
+            <!-- إدارة المستخدمين والصلاحيات -->
+            <li class="side-menu__category">إدارة النظام والحسابات</li>
+            <li>
+                <a href="{{ route('users.index') }}" class="side-menu__item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-users-gear text-success" data-lucide="users"></i>
+                    <span>إدارة المستخدمين والصلاحيات</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle ms-auto" style="font-size: 0.65rem;">أمان</span>
+                </a>
+            </li>
+            @endhasPermission
+
         </ul>
 
         <!-- بطاقة تثبيت التطبيق السريع -->

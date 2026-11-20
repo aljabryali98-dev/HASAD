@@ -35,9 +35,11 @@
         </div>
 
         <!-- زر الاستيراد الذكي الشامل (Smart Excel Import) -->
+        @hasPermission('import.view')
         <a href="{{ route('import.smart') }}" class="btn-header-action" title="الاستيراد الذكي الشامل من ملفات الإكسل">
             <i class="fa-solid fa-file-excel text-success"></i>
         </a>
+        @endhasPermission
 
         <!-- زر تثبيت تطبيق حصاد (PWA Universal Install) -->
         <button type="button" class="btn-header-action" id="btnInstallAppHeader" onclick="handlePwaInstallClick()" title="تثبيت التطبيق على جهازك (لابتوب / أندرويد / آيفون)">
@@ -100,6 +102,13 @@
                         <i class="fa-solid fa-earth-asia text-muted me-2"></i> المستكشف الجغرافي
                     </a>
                 </li>
+                @hasPermission('users.view')
+                <li>
+                    <a class="dropdown-item py-2 small d-flex align-items-center" href="{{ route('users.index') }}">
+                        <i class="fa-solid fa-users-gear text-muted me-2"></i> إدارة المستخدمين والصلاحيات
+                    </a>
+                </li>
+                @endhasPermission
                 <li><hr class="dropdown-divider my-1"></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}" id="logout-form">

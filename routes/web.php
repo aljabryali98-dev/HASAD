@@ -9,6 +9,7 @@ use App\Http\Controllers\GeographyController;
 use App\Http\Controllers\ProductiveGroupController;
 use App\Http\Controllers\SmartImportController;
 use App\Http\Controllers\UnifiedPersonnelController;
+use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -99,54 +100,108 @@ Route::middleware('auth')->group(function () {
     // =========================================================================
     // 1. القسم الأول: الجمعيات التعاونية (Cooperative Associations Module)
     // =========================================================================
-    Route::resource('associations', AssociationController::class);
-    Route::post('associations/{association}/board-members', [AssociationController::class, 'storeBoardMember'])->name('associations.board_members.store');
-    Route::post('associations/{association}/loans', [AssociationController::class, 'storeLoan'])->name('associations.loans.store');
+    Route::middleware('permission:associations.view')->group(function () {
+        Route::get('associations', [AssociationController::class, 'index'])->name('associations.index');
+        Route::get('associations/{association}', [AssociationController::class, 'show'])->name('associations.show');
+    });
+
+    Route::middleware('permission:associations.create')->group(function () {
+        Route::get('associations/create', [AssociationController::class, 'create'])->name('associations.create');
+        Route::post('associations', [AssociationController::class, 'store'])->name('associations.store');
+    });
+
+    Route::middleware('permission:associations.edit')->group(function () {
+        Route::get('associations/{association}/edit', [AssociationController::class, 'edit'])->name('associations.edit');
+        Route::put('associations/{association}', [AssociationController::class, 'update'])->name('associations.update');
+        Route::patch('associations/{association}', [AssociationController::class, 'update']);
+        Route::post('associations/{association}/board-members', [AssociationController::class, 'storeBoardMember'])->name('associations.board_members.store');
+        Route::post('associations/{association}/loans', [AssociationController::class, 'storeLoan'])->name('associations.loans.store');
+    });
+
+    Route::middleware('permission:associations.delete')->group(function () {
+        Route::delete('associations/{association}', [AssociationController::class, 'destroy'])->name('associations.destroy');
+    });
 
     // =========================================================================
     // 2. القسم الثاني: المجاميع الإنتاجية (Productive Groups Module)
     // =========================================================================
-    Route::resource('productive-groups', ProductiveGroupController::class);
-    Route::post('productive-groups/{productive_group}/attach-facilitator', [ProductiveGroupController::class, 'attachFacilitator'])->name('productive-groups.attach_facilitator');
+    Route::middleware('permission:productive_groups.view')->group(function () {
+        Route::get('productive-groups', [ProductiveGroupController::class, 'index'])->name('productive-groups.index');
+        Route::get('productive-groups/{productive_group}', [ProductiveGroupController::class, 'show'])->name('productive-groups.show');
+    });
+
+    Route::middleware('permission:productive_groups.create')->group(function () {
+        Route::get('productive-groups/create', [ProductiveGroupController::class, 'create'])->name('productive-groups.create');
+        Route::post('productive-groups', [ProductiveGroupController::class, 'store'])->name('productive-groups.store');
+    });
+
+    Route::middleware('permission:productive_groups.edit')->group(function () {
+        Route::get('productive-groups/{productive_group}/edit', [ProductiveGroupController::class, 'edit'])->name('productive-groups.edit');
+        Route::put('productive-groups/{productive_group}', [ProductiveGroupController::class, 'update'])->name('productive-groups.update');
+        Route::patch('productive-groups/{productive_group}', [ProductiveGroupController::class, 'update']);
+        Route::post('productive-groups/{productive_group}/attach-facilitator', [ProductiveGroupController::class, 'attachFacilitator'])->name('productive-groups.attach_facilitator');
+    });
+
+    Route::middleware('permission:productive_groups.delete')->group(function () {
+        Route::delete('productive-groups/{productive_group}', [ProductiveGroupController::class, 'destroy'])->name('productive-groups.destroy');
+    });
 
     // =========================================================================
     // 3. القسم الثالث - المحور (أ): الكوادر والفرسان والتدريب
     // =========================================================================
-    Route::resource('personnel', UnifiedPersonnelController::class);
+    Route::middleware('permission:personnel.view')->group(function () {
+        Route::get('personnel', [UnifiedPersonnelController::class, 'index'])->name('personnel.index');
+        Route::get('personnel/{personnel}', [UnifiedPersonnelController::class, 'show'])->name('personnel.show');
+    });
+
+    Route::middleware('permission:personnel.create')->group(function () {
+        Route::get('personnel/create', [UnifiedPersonnelController::class, 'create'])->name('personnel.create');
+        Route::post('personnel', [UnifiedPersonnelController::class, 'store'])->name('personnel.store');
+    });
+
+    Route::middleware('permission:personnel.edit')->group(function () {
+        Route::get('personnel/{personnel}/edit', [UnifiedPersonnelController::class, 'edit'])->name('personnel.edit');
+        Route::put('personnel/{personnel}', [UnifiedPersonnelController::class, 'update'])->name('personnel.update');
+        Route::patch('personnel/{personnel}', [UnifiedPersonnelController::class, 'update']);
+    });
+
+    Route::middleware('permission:personnel.delete')->group(function () {
+        Route::delete('personnel/{personnel}', [UnifiedPersonnelController::class, 'destroy'])->name('personnel.destroy');
+    });
 
     // =========================================================================
     // 3. القسم الثالث - المحاور (ب، ج، د): قاعدة بيانات عامة
     // =========================================================================
     Route::prefix('general')->name('general.')->group(function () {
         // المشاريع والمبادرات
-        Route::get('/projects', [GeneralDatabaseController::class, 'projects'])->name('projects.index');
-        Route::post('/projects', [GeneralDatabaseController::class, 'storeProject'])->name('projects.store');
-        Route::get('/awareness', [GeneralDatabaseController::class, 'awareness'])->name('awareness.index');
-        Route::post('/awareness', [GeneralDatabaseController::class, 'storeAwareness'])->name('awareness.store');
-        Route::get('/initiatives', [GeneralDatabaseController::class, 'initiatives'])->name('initiatives.index');
-        Route::post('/initiatives', [GeneralDatabaseController::class, 'storeInitiative'])->name('initiatives.store');
+        Route::get('/projects', [GeneralDatabaseController::class, 'projects'])->name('projects.index')->middleware('permission:projects.view');
+        Route::post('/projects', [GeneralDatabaseController::class, 'storeProject'])->name('projects.store')->middleware('permission:projects.manage');
+        Route::get('/awareness', [GeneralDatabaseController::class, 'awareness'])->name('awareness.index')->middleware('permission:projects.view');
+        Route::post('/awareness', [GeneralDatabaseController::class, 'storeAwareness'])->name('awareness.store')->middleware('permission:projects.manage');
+        Route::get('/initiatives', [GeneralDatabaseController::class, 'initiatives'])->name('initiatives.index')->middleware('permission:projects.view');
+        Route::post('/initiatives', [GeneralDatabaseController::class, 'storeInitiative'])->name('initiatives.store')->middleware('permission:projects.manage');
 
         // الزراعة والمحاصيل
-        Route::get('/crops', [GeneralDatabaseController::class, 'crops'])->name('crops.index');
-        Route::post('/crops', [GeneralDatabaseController::class, 'storeCrop'])->name('crops.store');
-        Route::get('/nurseries', [GeneralDatabaseController::class, 'nurseries'])->name('nurseries.index');
-        Route::post('/nurseries', [GeneralDatabaseController::class, 'storeNursery'])->name('nurseries.store');
-        Route::get('/farmers', [GeneralDatabaseController::class, 'farmers'])->name('farmers.index');
-        Route::post('/farmers', [GeneralDatabaseController::class, 'storeFarmer'])->name('farmers.store');
+        Route::get('/crops', [GeneralDatabaseController::class, 'crops'])->name('crops.index')->middleware('permission:crops.view');
+        Route::post('/crops', [GeneralDatabaseController::class, 'storeCrop'])->name('crops.store')->middleware('permission:crops.manage');
+        Route::get('/nurseries', [GeneralDatabaseController::class, 'nurseries'])->name('nurseries.index')->middleware('permission:crops.view');
+        Route::post('/nurseries', [GeneralDatabaseController::class, 'storeNursery'])->name('nurseries.store')->middleware('permission:crops.manage');
+        Route::get('/farmers', [GeneralDatabaseController::class, 'farmers'])->name('farmers.index')->middleware('permission:crops.view');
+        Route::post('/farmers', [GeneralDatabaseController::class, 'storeFarmer'])->name('farmers.store')->middleware('permission:crops.manage');
 
         // القروض التمويلية البيضاء
-        Route::get('/loans', [GeneralDatabaseController::class, 'loans'])->name('loans.index');
+        Route::get('/loans', [GeneralDatabaseController::class, 'loans'])->name('loans.index')->middleware('permission:loans.view');
     });
 
     // =========================================================================
     // 4. مستكشف النطاق الجغرافي الشامل (360° Geo-Explorer)
     // =========================================================================
-    Route::get('/geo-explorer', [GeoExplorerController::class, 'index'])->name('geo-explorer.index');
+    Route::get('/geo-explorer', [GeoExplorerController::class, 'index'])->name('geo-explorer.index')->middleware('permission:geography.view');
 
     // =========================================================================
     // 5. التقسيم الإداري والجغرافي (Geography & Administrative Divisions)
     // =========================================================================
-    Route::prefix('geography')->name('geography.')->group(function () {
+    Route::prefix('geography')->name('geography.')->middleware('permission:geography.manage')->group(function () {
         Route::get('/', [GeographyController::class, 'index'])->name('index');
         Route::get('/manage', [GeographyController::class, 'manage'])->name('manage');
         Route::post('/districts', [GeographyController::class, 'storeDistrict'])->name('districts.store');
@@ -171,8 +226,24 @@ Route::middleware('auth')->group(function () {
     // 6. مركز الاستيراد الذكي الشامل من ملفات الإكسل (Smart Excel Import Hub)
     // =========================================================================
     Route::prefix('import/smart')->name('import.smart')->group(function () {
-        Route::get('/', [SmartImportController::class, 'index']);
-        Route::post('/upload', [SmartImportController::class, 'upload'])->name('.upload');
-        Route::post('/master', [SmartImportController::class, 'runMaster'])->name('.master');
+        Route::get('/', [SmartImportController::class, 'index'])->middleware('permission:import.view');
+        Route::post('/upload', [SmartImportController::class, 'upload'])->name('.upload')->middleware('permission:import.execute');
+        Route::post('/master', [SmartImportController::class, 'runMaster'])->name('.master')->middleware('permission:import.execute');
+    });
+
+    // =========================================================================
+    // 7. إدارة المستخدمين والصلاحيات (Users & Roles Management)
+    // =========================================================================
+    Route::middleware('permission:users.view')->group(function () {
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+    });
+
+    Route::middleware('permission:users.manage')->group(function () {
+        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     });
 });
