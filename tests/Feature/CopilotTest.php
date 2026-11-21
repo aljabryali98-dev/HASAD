@@ -291,4 +291,23 @@ class CopilotTest extends TestCase
             ->assertJsonPath('data.type', 'governorate')
             ->assertJsonPath('data.title', 'التقرير التحليلي الذكي لمحافظة ذمار');
     }
+
+    public function test_copilot_direct_and_api_routes_both_work_seamlessly(): void
+    {
+        // اختبار المسار المباشر بدون بادئة api لضمان التوافق مع بيئة Vercel Serverless
+        $response1 = $this->actingAs($this->superAdmin)->postJson('/copilot/query', [
+            'prompt' => 'الملخص الوطني العام للنظام'
+        ]);
+        $response1->assertStatus(200)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.type', 'overview');
+
+        // اختبار المسار التقليدي ببادئة api
+        $response2 = $this->actingAs($this->superAdmin)->postJson('/api/copilot/query', [
+            'prompt' => 'الملخص الوطني العام للنظام'
+        ]);
+        $response2->assertStatus(200)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.type', 'overview');
+    }
 }

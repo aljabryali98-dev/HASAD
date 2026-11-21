@@ -4,6 +4,10 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
+// توحيد مسار التنفيذ لمنع Symfony/Laravel من اقتطاع بادئة /api في مسارات الطلبات ببيئة Vercel
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['PHP_SELF'] = '/index.php';
+
 // ضمان تمرير بروتوكول HTTPS في بيئة Vercel Serverless لمنع تحذيرات المتصفح
 if ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || isset($_SERVER['VERCEL']) || getenv('VERCEL')) {
     $_SERVER['HTTPS'] = 'on';

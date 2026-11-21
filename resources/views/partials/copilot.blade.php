@@ -161,19 +161,54 @@
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
             const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '{{ csrf_token() }}';
             
-            // استخدام مسار نسبي لضمان التوافق مع بيئة Vercel Serverless وأي خادم
-            const endpoint = '{{ route("api.copilot.query", [], false) }}' || '/api/copilot/query';
+            // استخدام مسار نسبي مع مسار بديل تلقائي لضمان التوافق المطلق مع بيئة Vercel Serverless
+            const primaryEndpoint = '{{ route("api.copilot.query", [], false) }}' || '/api/copilot/query';
+            const fallbackEndpoint = '{{ route("copilot.query", [], false) }}' || '/copilot/query';
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify({ prompt: prompt })
-            });
+            let response = null;
+            let usedFallback = false;
+
+            try {
+                response = await fetch(primaryEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                if (response.status === 404 && fallbackEndpoint && fallbackEndpoint !== primaryEndpoint) {
+                    usedFallback = true;
+                    response = await fetch(fallbackEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ prompt: prompt })
+                    });
+                }
+            } catch (netErr) {
+                if (!usedFallback && fallbackEndpoint && fallbackEndpoint !== primaryEndpoint) {
+                    response = await fetch(fallbackEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({ prompt: prompt })
+                    });
+                } else {
+                    throw netErr;
+                }
+            }
 
             removeCopilotLoaders();
 
@@ -190,10 +225,16 @@
             if (response.ok && data && data.status === 'success' && data.data) {
                 renderCopilotResponse(data.data, container);
             } else {
-                const errorMsg = (data && (data.message || data.error))
-                    || (response.status === 401 ? 'انتهت جلستك، يرجى تسجيل الدخول مجدداً للمتابعة.' : null)
-                    || (response.status === 403 ? 'عذراً، تم حظر الاستعلام لعدم توفر الصلاحية المطلوبة.' : null)
-                    || 'حدث خطأ أثناء معالجة الاستفسار.';
+                let errorMsg = (data && (data.message || data.error));
+                if (response.status === 401) {
+                    errorMsg = 'انتهت جلستك، يرجى تسجيل الدخول مجدداً للمتابعة.';
+                } else if (response.status === 403) {
+                    errorMsg = 'عذراً، تم حظر الاستعلام لعدم توفر الصلاحية المطلوبة.';
+                } else if (response.status === 404) {
+                    errorMsg = 'عذراً، تعذر الوصول لنقطة خدمة المساعد الذكي حالياً.';
+                } else if (!errorMsg) {
+                    errorMsg = 'حدث خطأ أثناء معالجة الاستفسار.';
+                }
                 renderCopilotError(errorMsg, container, prompt);
             }
         } catch (err) {

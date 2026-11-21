@@ -97,8 +97,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
-    // مساعد حصاد الذكي المدمج (Hasad AI Copilot API)
-    Route::post('/api/copilot/query', [\App\Http\Controllers\Api\CopilotApiController::class, 'query'])->name('api.copilot.query');
+    // مساعد حصاد الذكي المدمج (Hasad AI Copilot API) - دعم كلا المسارين لضمان العمل 100% في كافة البيئات
+    Route::match(['get', 'post'], '/api/copilot/query', [\App\Http\Controllers\Api\CopilotApiController::class, 'query'])->name('api.copilot.query');
+    Route::match(['get', 'post'], '/copilot/query', [\App\Http\Controllers\Api\CopilotApiController::class, 'query'])->name('copilot.query');
+
+    // مسارات احتياطية للتقسيم الإداري لضمان العمل في مختلف بيئات السيرفرلس
+    Route::get('/locations/hierarchy', [\App\Http\Controllers\Api\LocationApiController::class, 'hierarchy']);
+    Route::get('/locations/sub-locations/by-uzlah/{uzlahId}', [\App\Http\Controllers\Api\LocationApiController::class, 'getSubLocationsByUzlah']);
+    Route::post('/locations/sub-locations', [\App\Http\Controllers\Api\LocationApiController::class, 'storeSubLocation']);
 
     // =========================================================================
     // 1. القسم الأول: الجمعيات التعاونية (Cooperative Associations Module)
