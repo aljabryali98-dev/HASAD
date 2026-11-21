@@ -3908,3 +3908,17 @@ SELECT setval('dairy_and_livestocks_id_seq', COALESCE((SELECT MAX(id) FROM dairy
 SELECT setval('association_products_id_seq', COALESCE((SELECT MAX(id) FROM association_products), 1));
 SELECT setval('farmers_and_lands_id_seq', COALESCE((SELECT MAX(id) FROM farmers_and_lands), 1));
 SELECT setval('fuel_stations_id_seq', COALESCE((SELECT MAX(id) FROM fuel_stations), 1));
+
+-- -----------------------------------------------------------------------------
+-- جدول ربط المستخدمين بالمحافظات (governorate_user)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS governorate_user (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    governorate_id BIGINT NOT NULL REFERENCES governorates(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_governorate_user UNIQUE (user_id, governorate_id)
+);
+CREATE INDEX IF NOT EXISTS idx_governorate_user_user_id ON governorate_user(user_id);
+CREATE INDEX IF NOT EXISTS idx_governorate_user_governorate_id ON governorate_user(governorate_id);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\ScopeByGovernorate;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UnifiedPersonnel extends Model
 {
-    use HasFactory;
+    use HasFactory, ScopeByGovernorate;
 
     public const CATEGORIES = [
         'فرسان الجمعية' => 'فرسان الجمعية (17 تخصص)',

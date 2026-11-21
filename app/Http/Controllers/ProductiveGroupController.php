@@ -9,6 +9,7 @@ use App\Models\Governorate;
 use App\Models\ProductiveGroup;
 use App\Models\Uzlah;
 use App\Models\SubLocation;
+use App\Traits\ScopeByGovernorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -20,11 +21,11 @@ class ProductiveGroupController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name', 'code']);
         $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get(['id', 'full_name', 'phone']);
 
-        $query = ProductiveGroup::with([
+        $query = ProductiveGroup::forUserGovernorates()->with([
             'association:id,name,code',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
@@ -61,7 +62,7 @@ class ProductiveGroupController extends Controller
 
         $groups = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
-        $statsRow = ProductiveGroup::selectRaw("
+        $statsRow = ProductiveGroup::forUserGovernorates()->selectRaw("
             COUNT(*) as total_groups,
             COUNT(CASE WHEN status = 'نشطة' THEN 1 END) as active_groups,
             COALESCE(SUM(total_members), 0) as total_members,
@@ -123,6 +124,8 @@ class ProductiveGroupController extends Controller
         $facilitatorId = $validated['facilitator_id'] ?? null;
         unset($validated['facilitator_id']);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         $validated['code'] = ProductiveGroup::generateCode($validated['uzlah_id']);
         $group = ProductiveGroup::create($validated);
 
@@ -155,6 +158,8 @@ class ProductiveGroupController extends Controller
             'facilitators.productiveGroups',
         ])->findOrFail($id);
 
+        ScopeByGovernorate::authorize($group->governorate_id);
+
         $facilitators = Facilitator::where('status', 'نشط')->orderBy('full_name')->get();
 
         return view('productive_groups.show', compact('group', 'facilitators'));
@@ -165,6 +170,9 @@ class ProductiveGroupController extends Controller
      */
     public function edit(int $id)
     {
+        $group = ProductiveGroup::findOrFail($id);
+        ScopeByGovernorate::authorize($group->governorate_id);
+
         return redirect()->route('productive-groups.show', $id);
     }
 
@@ -174,6 +182,7 @@ class ProductiveGroupController extends Controller
     public function update(Request $request, int $id)
     {
         $group = ProductiveGroup::findOrFail($id);
+        ScopeByGovernorate::authorize($group->governorate_id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -210,6 +219,7 @@ class ProductiveGroupController extends Controller
     public function destroy(int $id)
     {
         $group = ProductiveGroup::findOrFail($id);
+        ScopeByGovernorate::authorize($group->governorate_id);
         $name = $group->name;
         $group->delete();
 
@@ -223,6 +233,7 @@ class ProductiveGroupController extends Controller
     public function attachFacilitator(Request $request, int $id)
     {
         $group = ProductiveGroup::findOrFail($id);
+        ScopeByGovernorate::authorize($group->governorate_id);
         $request->validate(['facilitator_id' => 'required|exists:facilitators,id']);
 
         $group->facilitators()->syncWithoutDetaching([

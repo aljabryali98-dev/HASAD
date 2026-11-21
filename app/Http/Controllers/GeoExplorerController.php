@@ -16,6 +16,7 @@ use App\Models\Nursery;
 use App\Models\ProductiveGroup;
 use App\Models\UnifiedPersonnel;
 use App\Models\Uzlah;
+use App\Traits\ScopeByGovernorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -27,15 +28,28 @@ class GeoExplorerController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $selectedGovId = $request->query('gov_id') ?? $request->query('governorate_id', 2);
+        $defaultGovId = $governorates->contains('id', 2) ? 2 : $governorates->first()?->id;
+        $selectedGovId = $request->query('gov_id') ?? $request->query('governorate_id', $defaultGovId);
+
+        if ($selectedGovId) {
+            ScopeByGovernorate::authorize($selectedGovId);
+        }
+
         $selectedDirId = $request->query('dir_id') ?? $request->query('directorate_id');
         $selectedUzlId = $request->query('uzl_id') ?? $request->query('uzlah_id');
 
-        $currentGov = Governorate::find($selectedGovId, ['id', 'code', 'name_ar', 'name']);
-        $currentDir = $selectedDirId ? Directorate::find($selectedDirId, ['id', 'code', 'name_ar', 'name', 'governorate_id']) : null;
-        $currentUzl = $selectedUzlId ? Uzlah::find($selectedUzlId, ['id', 'code', 'name_ar', 'name', 'directorate_id', 'governorate_id']) : null;
+        $currentGov = $selectedGovId ? Governorate::find($selectedGovId, ['id', 'code', 'name_ar', 'name']) : null;
+        $currentDir = $selectedDirId ? Directorate::where('id', $selectedDirId)->where('governorate_id', $selectedGovId)->first(['id', 'code', 'name_ar', 'name', 'governorate_id']) : null;
+        if (!$currentDir) {
+            $selectedDirId = null;
+        }
+
+        $currentUzl = $selectedUzlId ? Uzlah::where('id', $selectedUzlId)->where('governorate_id', $selectedGovId)->first(['id', 'code', 'name_ar', 'name', 'directorate_id', 'governorate_id']) : null;
+        if (!$currentUzl) {
+            $selectedUzlId = null;
+        }
 
         // دالة مساعدة لتطبيق نطاق الفلترة الجغرافي على أي نموذج
         $applyGeoFilter = function ($query) use ($selectedGovId, $selectedDirId, $selectedUzlId) {

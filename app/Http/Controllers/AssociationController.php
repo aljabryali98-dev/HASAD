@@ -11,6 +11,7 @@ use App\Models\Governorate;
 use App\Models\SubLocation;
 use App\Models\UnifiedPersonnel;
 use App\Models\Uzlah;
+use App\Traits\ScopeByGovernorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -22,9 +23,9 @@ class AssociationController extends Controller
      */
     public function index(Request $request): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = Association::with([
+        $query = Association::forUserGovernorates()->with([
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
             'uzlah:id,name_ar,name',
@@ -60,7 +61,7 @@ class AssociationController extends Controller
 
         $associations = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
-        $statsRow = Association::selectRaw("
+        $statsRow = Association::forUserGovernorates()->selectRaw("
             COUNT(*) as total_associations,
             COUNT(CASE WHEN status = 'نشطة' THEN 1 END) as active_associations,
             COUNT(CASE WHEN status = 'تحت التأسيس' THEN 1 END) as under_establishment,
@@ -84,7 +85,7 @@ class AssociationController extends Controller
      */
     public function create(): View
     {
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
         return view('associations.create', compact('governorates'));
     }
 
@@ -141,6 +142,8 @@ class AssociationController extends Controller
             'last_approved_budget_date' => 'nullable|date',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         $validated['code'] = Association::generateCode($validated['uzlah_id']);
         $association = Association::create($validated);
 
@@ -192,7 +195,9 @@ class AssociationController extends Controller
             'fuelStations',
         ])->findOrFail($id);
 
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        ScopeByGovernorate::authorize($association->governorate_id);
+
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get();
 
         return view('associations.show', compact('association', 'governorates'));
     }
@@ -203,7 +208,9 @@ class AssociationController extends Controller
     public function edit(int $id): View
     {
         $association = Association::findOrFail($id);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get();
+        ScopeByGovernorate::authorize($association->governorate_id);
+
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get();
         return view('associations.edit', compact('association', 'governorates'));
     }
 
@@ -213,6 +220,7 @@ class AssociationController extends Controller
     public function update(Request $request, int $id)
     {
         $association = Association::findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -321,6 +329,7 @@ class AssociationController extends Controller
     public function destroy(int $id)
     {
         $association = Association::findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
         $name = $association->name;
         $association->delete();
 
@@ -334,6 +343,7 @@ class AssociationController extends Controller
     public function storeBoardMember(Request $request, int $id)
     {
         $association = Association::findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
 
         $validated = $request->validate([
             'full_name' => 'required|string|max:150',
@@ -370,6 +380,7 @@ class AssociationController extends Controller
     public function storeLoan(Request $request, int $id)
     {
         $association = Association::findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
 
         $validated = $request->validate([
             'loan_type' => 'required|string|max:50',
@@ -405,6 +416,7 @@ class AssociationController extends Controller
     public function storeShareholder(Request $request, int $id)
     {
         $association = Association::findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
 
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
@@ -470,6 +482,7 @@ class AssociationController extends Controller
     public function printShareholderReceipt(int $associationId, int $shareholderId): View
     {
         $association = Association::with(['governorate', 'directorate'])->findOrFail($associationId);
+        ScopeByGovernorate::authorize($association->governorate_id);
         $shareholder = AssociationShareholder::where('association_id', $associationId)->findOrFail($shareholderId);
 
         return view('associations.receipt', compact('association', 'shareholder'));
@@ -481,6 +494,7 @@ class AssociationController extends Controller
     public function storePersonnel(Request $request, int $id)
     {
         $association = Association::findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
 
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
@@ -519,6 +533,7 @@ class AssociationController extends Controller
             'boardMembers', 'shareholders', 'productiveGroups',
             'personnel', 'loans', 'projects', 'crops', 'nurseries'
         ])->findOrFail($id);
+        ScopeByGovernorate::authorize($association->governorate_id);
 
         return view('associations.print', compact('association'));
     }

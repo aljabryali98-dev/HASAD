@@ -122,8 +122,64 @@
                 </div>
             </div>
 
-            <!-- العمود الأيسر: مصفوفة الصلاحيات التفصيلية لكامل أقسام النظام -->
+            <!-- العمود الأيسر: النطاق الجغرافي ومصفوفة الصلاحيات التفصيلية -->
             <div class="col-lg-8">
+
+                <!-- بطاقة النطاق الجغرافي والمحافظات المصرح بها (Emerald Glassmorphism) -->
+                <div class="card-hasad p-4 mb-4 emerald-glass-panel">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-map-location-dot text-emerald-custom fs-5"></i>
+                                <span>النطاق الجغرافي والمحافظات المصرح بها</span>
+                            </h5>
+                            <span class="text-muted small">حدد المحافظات التي يُسمح لهذا المستخدم بالوصول إليها وإدارتها (تقييد الصلاحيات جغرافياً)</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="toggleAllGovs(true)">
+                                <i class="fa-solid fa-check-double me-1"></i> تحديد الكل
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="toggleAllGovs(false)">
+                                <i class="fa-solid fa-ban me-1"></i> إلغاء الكل
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- تنبيه مدير النظام المركزي -->
+                    @php
+                        $isSuperAdminRole = in_array(old('role', $user->role), ['admin', 'super_admin'], true);
+                        $assignedGovIds = $user->governorates->pluck('id')->all();
+                    @endphp
+                    <div id="adminGovNotice" class="alert alert-info py-2 px-3 small {{ $isSuperAdminRole ? '' : 'd-none' }} rounded-3 border-0 bg-info-subtle text-info-emphasis mb-3">
+                        <i class="fa-solid fa-earth-americas me-1"></i>
+                        <strong>مدير النظام المركزي:</strong> يمتلك وصولاً سيادياً شاملاً لكافة المحافظات دون قيود تلقائياً (*).
+                    </div>
+
+                    <div class="row g-2" id="governoratesGrid">
+                        @foreach($governorates as $gov)
+                            @php
+                                $isGovChecked = is_array(old('governorate_ids')) 
+                                    ? in_array($gov->id, old('governorate_ids')) 
+                                    : in_array($gov->id, $assignedGovIds);
+                            @endphp
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <label class="gov-card-checkbox d-flex align-items-center gap-2 p-2 rounded-3 border h-100 cursor-pointer" for="gov_{{ $gov->id }}">
+                                    <input class="form-check-input gov-check m-0" 
+                                           type="checkbox" 
+                                           name="governorate_ids[]" 
+                                           value="{{ $gov->id }}" 
+                                           id="gov_{{ $gov->id }}"
+                                           {{ ($isGovChecked || $isSuperAdminRole) ? 'checked' : '' }}
+                                           {{ $isSuperAdminRole ? 'disabled' : '' }}>
+                                    <span class="fw-bold small text-dark flex-grow-1">{{ $gov->name }}</span>
+                                    <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.65rem;">{{ $gov->code }}</span>
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- مصفوفة الصلاحيات والتحكم بالأقسام -->
                 <div class="card-hasad p-4">
                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
                         <div>
@@ -201,31 +257,83 @@
 
 </div>
 
+@push('styles')
+<style>
+.emerald-glass-panel {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(236, 253, 245, 0.65));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
+}
+.text-emerald-custom {
+    color: #059669 !important;
+}
+.gov-card-checkbox {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(209, 213, 219, 0.8) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+}
+.gov-card-checkbox:hover {
+    border-color: #10b981 !important;
+    background: rgba(236, 253, 245, 0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+}
+.gov-card-checkbox:has(.gov-check:checked) {
+    border-color: #10b981 !important;
+    background: #ecfdf5 !important;
+    box-shadow: 0 0 0 1px #10b981, 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+.gov-card-checkbox:has(.gov-check:checked) .text-dark {
+    color: #065f46 !important;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
     const rolePresetsData = @json($rolePresets);
 
+    function toggleAllGovs(checked) {
+        const cbs = document.querySelectorAll('.gov-check:not(:disabled)');
+        cbs.forEach(cb => cb.checked = checked);
+    }
+
     function applyRolePreset(roleKey) {
         const descEl = document.getElementById('roleDescription');
         const adminNotice = document.getElementById('adminNotice');
+        const adminGovNotice = document.getElementById('adminGovNotice');
         const permChecks = document.querySelectorAll('.perm-check');
+        const govChecks = document.querySelectorAll('.gov-check');
 
         if (rolePresetsData[roleKey]) {
             descEl.textContent = rolePresetsData[roleKey].description;
         }
 
-        if (roleKey === 'admin') {
+        const isSuperAdmin = (roleKey === 'admin' || roleKey === 'super_admin');
+
+        if (isSuperAdmin) {
             adminNotice.classList.remove('d-none');
+            if (adminGovNotice) adminGovNotice.classList.remove('d-none');
             permChecks.forEach(cb => {
+                cb.checked = true;
+                cb.disabled = true;
+            });
+            govChecks.forEach(cb => {
                 cb.checked = true;
                 cb.disabled = true;
             });
         } else {
             adminNotice.classList.add('d-none');
+            if (adminGovNotice) adminGovNotice.classList.add('d-none');
             permChecks.forEach(cb => cb.disabled = false);
+            govChecks.forEach(cb => cb.disabled = false);
 
             if (roleKey !== 'custom') {
-                const allowed = rolePresetsData[roleKey].permissions || [];
+                const allowed = rolePresetsData[roleKey]?.permissions || [];
                 permChecks.forEach(cb => {
                     cb.checked = allowed.includes(cb.value);
                 });
@@ -235,7 +343,7 @@
 
     function onIndividualPermChange() {
         const roleSelect = document.getElementById('roleSelect');
-        if (roleSelect.value === 'admin') return;
+        if (roleSelect.value === 'admin' || roleSelect.value === 'super_admin') return;
         if (roleSelect.value !== 'custom') {
             roleSelect.value = 'custom';
             document.getElementById('roleDescription').textContent = rolePresetsData['custom'].description;

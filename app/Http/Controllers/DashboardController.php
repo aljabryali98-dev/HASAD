@@ -12,6 +12,8 @@ use App\Models\Governorate;
 use App\Models\Nursery;
 use App\Models\ProductiveGroup;
 use App\Models\UnifiedPersonnel;
+use App\Traits\ScopeByGovernorate;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
@@ -19,34 +21,40 @@ class DashboardController extends Controller
 {
     /**
      * Display the main executive statistics dashboard.
-     * فائقة السرعة ولحظية الاستجابة بفضل التخزين المؤقت الذكي (Smart Caching Layer).
+     * فائقة السرعة ولحظية الاستجابة بفضل التخزين المؤقت الذكي مع دعم التقييد الجغرافي للمحافظات.
      */
     public function index(): View
     {
+        $user = Auth::user();
+        $allowedGovs = $user?->allowedGovernorateIds();
+        $govCacheSuffix = $allowedGovs === null ? 'all' : (empty($allowedGovs) ? 'none' : implode('_', $allowedGovs));
+        $kpiCacheKey = "dashboard_kpis_{$govCacheSuffix}";
+
         // إمكانية فرض تحديث البيانات فوراً عند تمرير ?fresh=1
         if (request()->boolean('fresh')) {
+            Cache::forget($kpiCacheKey);
             Cache::forget('dashboard_kpis');
             Cache::forget('dashboard_recent');
         }
 
-        // 1. المؤشرات الإحصائية العامة المركزية (مخزنة مؤقتاً لمدة 5 دقائق لتقليل استعلامات قاعدة البيانات)
-        $kpis = Cache::remember('dashboard_kpis', 300, function () {
+        // 1. المؤشرات الإحصائية العامة المركزية مقيدة بنطاق المحافظات المصرح بها
+        $kpis = Cache::remember($kpiCacheKey, 300, function () {
             // إحصائيات الجمعيات التعاونية
-            $assocStats = Association::selectRaw("
+            $assocStats = Association::forUserGovernorates()->selectRaw("
                 COUNT(*) as total,
                 COUNT(CASE WHEN status = 'نشطة' THEN 1 END) as active,
                 COALESCE(SUM(current_capital), 0) as total_capital
             ")->first();
 
             // إحصائيات المجاميع الإنتاجية
-            $groupStats = ProductiveGroup::selectRaw("
+            $groupStats = ProductiveGroup::forUserGovernorates()->selectRaw("
                 COUNT(*) as total,
                 COALESCE(SUM(total_members), 0) as total_members,
                 COALESCE(SUM(productive_area), 0) as total_area
             ")->first();
 
             // إحصائيات الكوادر والفرسان
-            $personnelStats = UnifiedPersonnel::selectRaw("
+            $personnelStats = UnifiedPersonnel::forUserGovernorates()->selectRaw("
                 COUNT(*) as total,
                 COUNT(CASE WHEN category = 'فرسان التنمية' THEN 1 END) as knights,
                 COUNT(CASE WHEN category = 'باحثين' THEN 1 END) as researchers,
@@ -54,28 +62,28 @@ class DashboardController extends Controller
             ")->first();
 
             // إحصائيات المشاريع والمزارعين
-            $projectStats = AssociationProject::selectRaw("
+            $projectStats = AssociationProject::forUserGovernorates()->selectRaw("
                 COUNT(*) as total,
                 COALESCE(SUM(cost), 0) as total_cost
             ")->first();
 
-            $farmerStats = FarmerAndLand::selectRaw("
+            $farmerStats = FarmerAndLand::forUserGovernorates()->selectRaw("
                 COUNT(*) as total,
                 COALESCE(SUM(cultivated_area), 0) as total_area
             ")->first();
 
-            $nurseriesCount = Nursery::count();
-            $initiativesCount = CommunityInitiative::count();
+            $nurseriesCount = Nursery::forUserGovernorates()->count();
+            $initiativesCount = CommunityInitiative::forUserGovernorates()->count();
 
             // إحصائيات القروض البيضاء
-            $loanStats = AssociationLoan::selectRaw("
+            $loanStats = AssociationLoan::forUserGovernorates()->selectRaw("
                 COUNT(*) as total,
                 COALESCE(SUM(loan_amount), 0) as total_amount,
                 COALESCE(SUM(paid_amount), 0) as total_paid,
                 COALESCE(SUM(remaining_balance), 0) as total_remaining
             ")->first();
 
-            $governoratesCount = Governorate::where('is_active', true)->count();
+            $governoratesCount = ScopeByGovernorate::allowedGovernorates()->count();
 
             return [
                 'associations_count' => (int) ($assocStats->total ?? 0),
@@ -102,20 +110,23 @@ class DashboardController extends Controller
             ];
         });
 
-        // 2. آخر السجلات المضافة (استعلام مباشر فائق السرعة عبر الفهارس لتفادي أخطاء التسلسل في الكاش)
-        $recentAssociations = Association::select(['id', 'code', 'name', 'status', 'governorate_id', 'directorate_id', 'created_at'])
+        // 2. آخر السجلات المضافة للمحافظات المصرح بها
+        $recentAssociations = Association::forUserGovernorates()
+            ->select(['id', 'code', 'name', 'status', 'governorate_id', 'directorate_id', 'created_at'])
             ->with(['governorate:id,name_ar,name', 'directorate:id,name_ar,name'])
             ->latest('id')
             ->take(5)
             ->get();
 
-        $recentGroups = ProductiveGroup::select(['id', 'code', 'name', 'total_members', 'status', 'association_id', 'created_at'])
+        $recentGroups = ProductiveGroup::forUserGovernorates()
+            ->select(['id', 'code', 'name', 'total_members', 'status', 'association_id', 'governorate_id', 'created_at'])
             ->with(['association:id,name'])
             ->latest('id')
             ->take(5)
             ->get();
 
-        $recentProjects = AssociationProject::select(['id', 'project_name', 'cost', 'execution_status', 'association_id', 'created_at'])
+        $recentProjects = AssociationProject::forUserGovernorates()
+            ->select(['id', 'project_name', 'cost', 'execution_status', 'association_id', 'governorate_id', 'created_at'])
             ->with(['association:id,name'])
             ->latest('id')
             ->take(5)

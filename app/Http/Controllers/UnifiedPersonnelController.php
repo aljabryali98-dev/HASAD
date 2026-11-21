@@ -8,6 +8,7 @@ use App\Models\Governorate;
 use App\Models\UnifiedPersonnel;
 use App\Models\Uzlah;
 use App\Models\SubLocation;
+use App\Traits\ScopeByGovernorate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -25,10 +26,10 @@ class UnifiedPersonnelController extends Controller
             : ($request->filled('association_id') ? null : 'فرسان الجمعية');
         $subSpecialty = $request->query('sub_specialty');
 
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name', 'code']);
 
-        $query = UnifiedPersonnel::with([
+        $query = UnifiedPersonnel::forUserGovernorates()->with([
             'association:id,name,code',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
@@ -67,7 +68,7 @@ class UnifiedPersonnelController extends Controller
 
         $personnel = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
-        $statsRow = UnifiedPersonnel::selectRaw("
+        $statsRow = UnifiedPersonnel::forUserGovernorates()->selectRaw("
             COUNT(*) as total_all,
             COUNT(CASE WHEN category = 'فرسان الجمعية' THEN 1 END) as knights_count,
             COUNT(CASE WHEN category = 'باحثين' THEN 1 END) as researchers_count,
@@ -113,6 +114,8 @@ class UnifiedPersonnelController extends Controller
      */
     public function show(int $id)
     {
+        $person = UnifiedPersonnel::findOrFail($id);
+        ScopeByGovernorate::authorize($person->governorate_id);
         return redirect()->route('personnel.index', ['search' => $id]);
     }
 
@@ -121,6 +124,8 @@ class UnifiedPersonnelController extends Controller
      */
     public function edit(int $id)
     {
+        $person = UnifiedPersonnel::findOrFail($id);
+        ScopeByGovernorate::authorize($person->governorate_id);
         return redirect()->route('personnel.index', ['edit_id' => $id]);
     }
 
@@ -163,6 +168,8 @@ class UnifiedPersonnelController extends Controller
             'activation_type' => 'nullable|string|max:100',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         if (!empty($validated['birth_date'])) {
             $validated['age'] = Carbon::parse($validated['birth_date'])->age;
         }
@@ -186,6 +193,7 @@ class UnifiedPersonnelController extends Controller
     public function update(Request $request, int $id)
     {
         $person = UnifiedPersonnel::findOrFail($id);
+        ScopeByGovernorate::authorize($person->governorate_id);
 
         $validated = $request->validate([
             'full_name' => 'required|string|max:150',
@@ -211,6 +219,7 @@ class UnifiedPersonnelController extends Controller
     public function destroy(int $id)
     {
         $person = UnifiedPersonnel::findOrFail($id);
+        ScopeByGovernorate::authorize($person->governorate_id);
         $name = $person->full_name;
         $person->delete();
 

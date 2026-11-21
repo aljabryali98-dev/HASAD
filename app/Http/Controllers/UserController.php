@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Governorate;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +15,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query()->latest();
+        $query = User::with('governorates')->latest();
 
         // فلترة بالبحث النصي (الاسم، البريد، الهاتف)
         if ($search = $request->input('search')) {
@@ -41,7 +42,7 @@ class UserController extends Controller
             'total' => User::count(),
             'active' => User::where('is_active', true)->count(),
             'inactive' => User::where('is_active', false)->count(),
-            'admins' => User::where('role', 'admin')->count(),
+            'admins' => User::whereIn('role', ['admin', 'super_admin'])->count(),
         ];
 
         $rolePresets = User::rolePresets();
@@ -56,8 +57,9 @@ class UserController extends Controller
     {
         $availablePermissions = User::availablePermissions();
         $rolePresets = User::rolePresets();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        return view('users.create', compact('availablePermissions', 'rolePresets'));
+        return view('users.create', compact('availablePermissions', 'rolePresets', 'governorates'));
     }
 
     /**
@@ -70,19 +72,21 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
             'phone' => ['nullable', 'string', 'max:25'],
-            'role' => ['required', 'string', 'in:admin,supervisor,data_entry,viewer,custom'],
+            'role' => ['required', 'string', 'in:admin,super_admin,governorate_admin,supervisor,data_entry,viewer,custom'],
             'is_active' => ['nullable', 'boolean'],
             'permissions' => ['nullable', 'array'],
+            'governorate_ids' => ['nullable', 'array'],
+            'governorate_ids.*' => ['integer', 'exists:governorates,id'],
         ]);
 
         $permissions = $validated['permissions'] ?? [];
 
         // إذا كان الدور مدير نظام مركزي، يُمنح الرمز الشامل دائماً
-        if ($validated['role'] === 'admin') {
+        if (in_array($validated['role'], ['admin', 'super_admin'], true)) {
             $permissions = ['*'];
         }
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => strtolower(trim($validated['email'])),
             'password' => Hash::make($validated['password']),
@@ -92,7 +96,11 @@ class UserController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'تم إنشاء حساب المستخدم وتعيين حزمة الصلاحيات بنجاح!');
+        if ($request->has('governorate_ids')) {
+            $user->governorates()->sync($request->input('governorate_ids', []));
+        }
+
+        return redirect()->route('users.index')->with('success', 'تم إنشاء حساب المستخدم وتعيين حزمة الصلاحيات والمحافظات بنجاح!');
     }
 
     /**
@@ -100,10 +108,12 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $user->load('governorates');
         $availablePermissions = User::availablePermissions();
         $rolePresets = User::rolePresets();
+        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        return view('users.edit', compact('user', 'availablePermissions', 'rolePresets'));
+        return view('users.edit', compact('user', 'availablePermissions', 'rolePresets', 'governorates'));
     }
 
     /**
@@ -116,9 +126,11 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:6'],
             'phone' => ['nullable', 'string', 'max:25'],
-            'role' => ['required', 'string', 'in:admin,supervisor,data_entry,viewer,custom'],
+            'role' => ['required', 'string', 'in:admin,super_admin,governorate_admin,supervisor,data_entry,viewer,custom'],
             'is_active' => ['nullable', 'boolean'],
             'permissions' => ['nullable', 'array'],
+            'governorate_ids' => ['nullable', 'array'],
+            'governorate_ids.*' => ['integer', 'exists:governorates,id'],
         ]);
 
         // حماية: منع المستخدم من تعطيل حسابه الخاص
@@ -128,7 +140,7 @@ class UserController extends Controller
 
         $permissions = $validated['permissions'] ?? [];
 
-        if ($validated['role'] === 'admin') {
+        if (in_array($validated['role'], ['admin', 'super_admin'], true)) {
             $permissions = ['*'];
         }
 
@@ -147,7 +159,11 @@ class UserController extends Controller
 
         $user->update($updateData);
 
-        return redirect()->route('users.index')->with('success', 'تم تحديث بيانات المستخدم والصلاحيات بنجاح!');
+        if ($request->has('governorate_ids')) {
+            $user->governorates()->sync($request->input('governorate_ids', []));
+        }
+
+        return redirect()->route('users.index')->with('success', 'تم تحديث بيانات المستخدم والصلاحيات والمحافظات بنجاح!');
     }
 
     /**

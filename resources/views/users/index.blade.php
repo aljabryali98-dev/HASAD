@@ -147,6 +147,7 @@
                                 <th>الهاتف</th>
                                 <th>الدور المؤسسي</th>
                                 <th>نطاق الصلاحيات</th>
+                                <th>المحافظات المخصصة</th>
                                 <th>الحالة</th>
                                 <th>تاريخ الإنشاء</th>
                                 <th class="text-center" style="width: 140px;">الإجراءات</th>
@@ -195,6 +196,25 @@
                                             <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small font-monospace">
                                                 <i class="fa-solid fa-key me-1"></i> {{ $permCount }} صلاحية محددة
                                             </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($u->isSuperAdmin() || $u->allowedGovernorateIds() === null)
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                                                <i class="fa-solid fa-earth-americas me-1"></i> كافة المحافظات
+                                            </span>
+                                        @elseif($u->governorates->isEmpty())
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 small">
+                                                <i class="fa-solid fa-triangle-exclamation me-1"></i> غير محدد
+                                            </span>
+                                        @else
+                                            <div class="d-flex flex-wrap gap-1" style="max-width: 220px;">
+                                                @foreach($u->governorates as $g)
+                                                    <span class="badge px-2 py-1" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.72rem;">
+                                                        <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ $g->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
                                         @endif
                                     </td>
                                     <td>

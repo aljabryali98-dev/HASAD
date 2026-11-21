@@ -23,6 +23,7 @@ use App\Models\StrategicPlan;
 use App\Models\StudyAndResearch;
 use App\Models\UnitTraining;
 use App\Models\Uzlah;
+use App\Traits\ScopeByGovernorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -34,12 +35,10 @@ class GeneralDatabaseController extends Controller
      */
     public function projects(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name', 'code']);
-        $governorates = Cache::remember('active_governorates', 86400, function () {
-            return Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
-        });
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name', 'code']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = AssociationProject::with([
+        $query = AssociationProject::forUserGovernorates()->with([
             'association:id,name,code',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
@@ -51,7 +50,7 @@ class GeneralDatabaseController extends Controller
 
         $projects = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
-        $statsRow = AssociationProject::selectRaw("
+        $statsRow = AssociationProject::forUserGovernorates()->selectRaw("
             COUNT(*) as total,
             COALESCE(SUM(cost), 0) as total_cost,
             COUNT(CASE WHEN execution_status = 'منفذ' THEN 1 END) as completed,
@@ -83,6 +82,8 @@ class GeneralDatabaseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         AssociationProject::create($validated);
         Cache::forget('dashboard_kpis');
         Cache::forget('dashboard_recent');
@@ -94,10 +95,10 @@ class GeneralDatabaseController extends Controller
      */
     public function awareness(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = AwarenessSession::with([
+        $query = AwarenessSession::forUserGovernorates()->with([
             'association:id,name',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
@@ -105,10 +106,11 @@ class GeneralDatabaseController extends Controller
         ]);
 
         if ($request->filled('type')) $query->where('awareness_type', $request->type);
+        if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
 
         $sessions = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
-        $statsRow = AwarenessSession::selectRaw("
+        $statsRow = AwarenessSession::forUserGovernorates()->selectRaw("
             COALESCE(SUM(sessions_count), 0) as total_sessions,
             COALESCE(SUM(beneficiaries_count), 0) as beneficiaries,
             COALESCE(SUM(cost), 0) as total_cost
@@ -140,6 +142,8 @@ class GeneralDatabaseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         AwarenessSession::create($validated);
         Cache::forget('dashboard_kpis');
         Cache::forget('dashboard_recent');
@@ -151,17 +155,21 @@ class GeneralDatabaseController extends Controller
      */
     public function initiatives(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $initiatives = CommunityInitiative::with([
+        $query = CommunityInitiative::forUserGovernorates()->with([
             'association:id,name',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
             'uzlah:id,name_ar,name'
-        ])->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        ]);
 
-        $statsRow = CommunityInitiative::selectRaw("
+        if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
+
+        $initiatives = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = CommunityInitiative::forUserGovernorates()->selectRaw("
             COUNT(*) as total,
             COALESCE(SUM(initiators_count), 0) as initiators,
             COALESCE(SUM(beneficiaries_count), 0) as beneficiaries,
@@ -197,6 +205,8 @@ class GeneralDatabaseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         CommunityInitiative::create($validated);
         Cache::forget('dashboard_kpis');
         Cache::forget('dashboard_recent');
@@ -208,10 +218,10 @@ class GeneralDatabaseController extends Controller
      */
     public function crops(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = AssociationCrop::with([
+        $query = AssociationCrop::forUserGovernorates()->with([
             'association:id,name',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
@@ -220,10 +230,11 @@ class GeneralDatabaseController extends Controller
 
         if ($request->filled('association_id')) $query->where('association_id', $request->association_id);
         if ($request->filled('crop_type')) $query->where('crop_type', $request->crop_type);
+        if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
 
         $crops = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
-        $statsRow = AssociationCrop::selectRaw("
+        $statsRow = AssociationCrop::forUserGovernorates()->selectRaw("
             COUNT(*) as total_records,
             COALESCE(SUM(production_quantity), 0) as total_production,
             COUNT(CASE WHEN availability_status = 'متوفرة' THEN 1 END) as available_count
@@ -256,6 +267,8 @@ class GeneralDatabaseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         AssociationCrop::create($validated);
         Cache::forget('dashboard_kpis');
         Cache::forget('dashboard_recent');
@@ -267,17 +280,21 @@ class GeneralDatabaseController extends Controller
      */
     public function nurseries(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $nurseries = Nursery::with([
+        $query = Nursery::forUserGovernorates()->with([
             'association:id,name',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
             'uzlah:id,name_ar,name'
-        ])->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        ]);
 
-        $statsRow = Nursery::selectRaw("
+        if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
+
+        $nurseries = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = Nursery::forUserGovernorates()->selectRaw("
             COUNT(*) as total_nurseries,
             COALESCE(SUM(capacity), 0) as total_capacity,
             COUNT(CASE WHEN status = 'مفعل' THEN 1 END) as active_nurseries
@@ -307,6 +324,8 @@ class GeneralDatabaseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         Nursery::create($validated);
         Cache::forget('dashboard_kpis');
         Cache::forget('dashboard_recent');
@@ -318,10 +337,10 @@ class GeneralDatabaseController extends Controller
      */
     public function farmers(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $query = FarmerAndLand::with([
+        $query = FarmerAndLand::forUserGovernorates()->with([
             'association:id,name',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name',
@@ -329,10 +348,11 @@ class GeneralDatabaseController extends Controller
         ]);
 
         if ($request->filled('association_id')) $query->where('association_id', $request->association_id);
+        if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
 
         $farmers = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
 
-        $statsRow = FarmerAndLand::selectRaw("
+        $statsRow = FarmerAndLand::forUserGovernorates()->selectRaw("
             COUNT(*) as total_farmers,
             COALESCE(SUM(total_land_area), 0) as total_area,
             COALESCE(SUM(cultivated_area), 0) as cultivated_area
@@ -366,6 +386,8 @@ class GeneralDatabaseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        ScopeByGovernorate::authorize($validated['governorate_id']);
+
         FarmerAndLand::create($validated);
         Cache::forget('dashboard_kpis');
         Cache::forget('dashboard_recent');
@@ -377,16 +399,20 @@ class GeneralDatabaseController extends Controller
      */
     public function loans(Request $request): View
     {
-        $associations = Association::orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::where('is_active', true)->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
+        $associations = Association::forUserGovernorates()->orderBy('name')->get(['id', 'name']);
+        $governorates = ScopeByGovernorate::allowedGovernorates()->orderBy('id')->get(['id', 'code', 'name_ar', 'name']);
 
-        $loans = AssociationLoan::with([
+        $query = AssociationLoan::forUserGovernorates()->with([
             'association:id,name,code',
             'governorate:id,name_ar,name',
             'directorate:id,name_ar,name'
-        ])->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        ]);
 
-        $statsRow = AssociationLoan::selectRaw("
+        if ($request->filled('gov_id')) $query->where('governorate_id', $request->gov_id);
+
+        $loans = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $statsRow = AssociationLoan::forUserGovernorates()->selectRaw("
             COUNT(*) as total_loans,
             COALESCE(SUM(loan_amount), 0) as total_amount,
             COALESCE(SUM(paid_amount), 0) as total_paid,

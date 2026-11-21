@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -32,11 +33,91 @@ class User extends Authenticatable
     }
 
     /**
+     * العلاقة مع المحافظات المصرح للمستخدم بالوصول إليها وإدارتها.
+     */
+    public function governorates(): BelongsToMany
+    {
+        return $this->belongsToMany(Governorate::class, 'governorate_user', 'user_id', 'governorate_id')->withTimestamps();
+    }
+
+    /**
+     * الحصول على معرفات المحافظات المصرح للمستخدم بالوصول إليها.
+     * يعيد null إذا كان المستخدم مدير نظام مركزي (super_admin) أو لديه الصلاحية الشاملة (*) / isAdmin.
+     * وإلا يعيد مصفوفة من المعرفات الرقمية (integer IDs) للمحافظات المحددة له.
+     *
+     * @return array<int>|null
+     */
+    public function allowedGovernorateIds(): ?array
+    {
+        if ($this->isSuperAdmin() || $this->isAdmin()) {
+            return null;
+        }
+
+        $perms = $this->permissions ?? [];
+        if (in_array('*', $perms, true)) {
+            return null;
+        }
+
+        if ($this->relationLoaded('governorates')) {
+            return $this->governorates->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
+        }
+
+        return $this->governorates()->pluck('governorates.id')->map(fn ($id) => (int) $id)->values()->all();
+    }
+
+    /**
+     * التحقق مما إذا كان للمستخدم صلاحية الوصول لمحافظة محددة.
+     */
+    public function canAccessGovernorate(int|string|null $governorateId): bool
+    {
+        $allowed = $this->allowedGovernorateIds();
+        if ($allowed === null) {
+            return true;
+        }
+        if ($governorateId === null) {
+            return false;
+        }
+        return in_array((int) $governorateId, $allowed, true);
+    }
+
+    /**
+     * Check if user is super admin (full central system admin).
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin' || $this->role === 'admin' || in_array('*', $this->permissions ?? [], true);
+    }
+
+    /**
+     * Check if user is governorate admin / supervisor.
+     */
+    public function isGovernorateAdmin(): bool
+    {
+        return $this->role === 'governorate_admin' || $this->role === 'supervisor';
+    }
+
+    /**
+     * Check if user is data entry.
+     */
+    public function isDataEntry(): bool
+    {
+        return $this->role === 'data_entry';
+    }
+
+    /**
+     * Check if user is viewer.
+     */
+    public function isViewer(): bool
+    {
+        return $this->role === 'viewer';
+    }
+
+    /**
      * Check if user is system administrator.
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->isSuperAdmin();
     }
 
     /**
@@ -188,6 +269,22 @@ class User extends Authenticatable
                 'badge_class' => 'bg-danger-subtle text-danger border-danger-subtle',
                 'description' => 'صلاحية سيادية كاملة على كافة المحاور والوظائف والعمليات بدون قيود (*)',
                 'permissions' => ['*'],
+            ],
+            'governorate_admin' => [
+                'name' => 'مدير فرع / نطاق المحافظة',
+                'badge_class' => 'bg-success-subtle text-success border-success-subtle',
+                'description' => 'إدارة شاملة لبيانات ومشاريع وجمعيات المحافظات المصرح له بها فقط',
+                'permissions' => [
+                    'dashboard.view', 'dashboard.financial',
+                    'associations.view', 'associations.create', 'associations.edit',
+                    'productive_groups.view', 'productive_groups.create', 'productive_groups.edit',
+                    'personnel.view', 'personnel.create', 'personnel.edit',
+                    'projects.view', 'projects.manage',
+                    'crops.view', 'crops.manage',
+                    'loans.view',
+                    'geography.view',
+                    'import.view',
+                ],
             ],
             'supervisor' => [
                 'name' => 'مشرف ميداني عام',
